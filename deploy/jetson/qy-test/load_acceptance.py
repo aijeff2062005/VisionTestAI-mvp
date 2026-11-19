@@ -3,7 +3,7 @@ import concurrent.futures, http.cookiejar, json, os, platform, statistics, subpr
 from pathlib import Path
 assert os.environ.get('GITHUB_ACTIONS') == 'true', 'Synthetic CI site only'
 create = '''import frappe, os, json, secrets
-frappe.init(site=os.environ['QY_SITE']); frappe.connect(); frappe.set_user('Administrator')
+frappe.init(site=os.environ['QY_SITE'], sites_path='sites'); frappe.connect(); frappe.set_user('Administrator')
 users=[]
 for n in range(5):
     email=f'qy-load-{n}@example.invalid'; password=secrets.token_hex(24)

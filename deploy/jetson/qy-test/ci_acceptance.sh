@@ -23,6 +23,7 @@ assert r.status==200
 print('Administrator login and authenticated Desk route: PASS')
 PY
 docker compose exec -T backend ./env/bin/python < runtime_acceptance.py > out/acceptance-runtime.json
+docker compose cp "backend:/home/frappe/frappe-bench/sites/$QY_SITE/private/files/qy-arm64-report.pdf" out/qy-arm64-report.pdf
 # Full container stop/start tests volume survival, not a physical device reboot.
 docker compose stop db redis-cache redis-queue mqtt backend frontend worker scheduler websocket
 docker compose start db redis-cache redis-queue mqtt backend frontend worker scheduler websocket

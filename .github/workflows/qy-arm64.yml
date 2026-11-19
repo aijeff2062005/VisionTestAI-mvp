@@ -91,6 +91,7 @@ jobs:
             deploy/jetson/qy-test/out/*metadata.json
             deploy/jetson/qy-test/out/acceptance*.json
             deploy/jetson/qy-test/out/visioncare-native-arm64.png
+            deploy/jetson/qy-test/out/qy-arm64-report.pdf
             deploy/jetson/qy-test/out/*verification.txt
             deploy/jetson/qy-test/out/*.lock
             deploy/jetson/qy-test/out/source-lock.json

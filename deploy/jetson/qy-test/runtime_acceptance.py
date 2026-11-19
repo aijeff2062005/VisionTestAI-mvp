@@ -2,7 +2,7 @@
 import os, json, time, io
 from pathlib import Path
 import frappe
-frappe.init(site=os.environ['QY_SITE'])
+frappe.init(site=os.environ['QY_SITE'], sites_path='sites')
 frappe.connect()
 try:
     apps = frappe.get_installed_apps()
@@ -28,6 +28,7 @@ try:
         from pypdf import PdfReader
         pdf=get_pdf('<html><body><h1>QY ARM64 report</h1><p>VisionCare acceptance 123</p></body></html>')
         assert pdf.startswith(b'%PDF-')
+        Path(frappe.get_site_path('private','files','qy-arm64-report.pdf')).write_bytes(pdf)
         assert 'VisionCare' in ''.join(page.extract_text() for page in PdfReader(io.BytesIO(pdf)).pages)
         job=frappe.enqueue('frappe.utils.now',queue='short',timeout=120,is_async=True)
         deadline=time.monotonic()+180
