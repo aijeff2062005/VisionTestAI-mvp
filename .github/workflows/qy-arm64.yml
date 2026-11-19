@@ -29,6 +29,16 @@ jobs:
         run: bash deploy/jetson/qy-test/package.sh
       - name: Test fresh installation, jobs, PDF, restart and persistence
         run: bash deploy/jetson/qy-test/ci_acceptance.sh
+      - name: Render VisionCare in native ARM64 browser
+        run: |
+          python3 -m venv /tmp/qy-browser
+          /tmp/qy-browser/bin/pip install playwright==1.56.0
+          /tmp/qy-browser/bin/playwright install --with-deps chromium
+          cd deploy/jetson/qy-test
+          set -a
+          source .env
+          set +a
+          /tmp/qy-browser/bin/python browser_acceptance.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -41,5 +51,8 @@ jobs:
             deploy/jetson/qy-test/out/*verification.json
             deploy/jetson/qy-test/out/*metadata.json
             deploy/jetson/qy-test/out/acceptance*.json
+            deploy/jetson/qy-test/out/visioncare-native-arm64.png
+            deploy/jetson/qy-test/out/*verification.txt
+            deploy/jetson/qy-test/out/*.lock
             build-native.log
           retention-days: 7

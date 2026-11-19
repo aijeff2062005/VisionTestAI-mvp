@@ -27,7 +27,9 @@ bash ./wait-ready.sh
 docker compose exec -T -e CHECK_PERSISTENCE=1 backend ./env/bin/python < runtime_acceptance.py > out/acceptance-restart.json
 backup="$PWD/out/ci-backup"
 sudo ./backup.sh "$backup"
+docker compose exec -T -e BREAK_PERSISTENCE=1 backend ./env/bin/python < runtime_acceptance.py
 sudo ./rollback.sh "$backup" --restore-data
 docker compose exec -T -e CHECK_PERSISTENCE=1 backend ./env/bin/python < runtime_acceptance.py > out/acceptance-restore.json
+python3 load_acceptance.py
 cp install-report.json out/acceptance-install.json
 docker compose ps -a

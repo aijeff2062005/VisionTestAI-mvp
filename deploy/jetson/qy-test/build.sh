@@ -51,7 +51,8 @@ for app in smart-hospital qy-vision-hospital; do
 done
 cp "$DIR/provision.sh" "$DIR/healthcheck.py" "$CTX/upstream/deploy/jetson/qy-test/"
 mkdir -p "$CTX/upstream/qy-build-tools"
-cp "$DIR/patch_portal.py" "$CTX/upstream/qy-build-tools/patch_portal.py"
+cp "$DIR/patch_portal.py" "$DIR/verify_sources.py" "$CTX/upstream/qy-build-tools/"
+cp "$DIR/out/source-lock.json" "$CTX/upstream/qy-build-tools/source-lock.json"
 # A single build graph lets BuildKit share the ARM64 base without a registry.
 cp "$CTX/upstream/images/custom/Containerfile" "$CTX/upstream/Containerfile.qy"
 mkdir -p "$CTX/upstream/dependency-cache"
@@ -72,6 +73,8 @@ docker buildx build --builder "${BUILDX_BUILDER:-default}" --progress plain --pl
   --tag "$IMAGE" -f "$CTX/upstream/Containerfile.qy" "$CTX/upstream"
 [[ "$(docker image inspect --format '{{.Architecture}}' "$IMAGE")" == arm64 ]]
 docker image inspect "$IMAGE" > "$DIR/out/image-inspect.json"
+docker run --rm --entrypoint sh "$IMAGE" -c 'dpkg-query -W' > "$DIR/out/system-packages.lock"
+docker run --rm --entrypoint ./env/bin/python "$IMAGE" -m pip check > "$DIR/out/dependency-verification.txt"
 docker run --rm --platform linux/arm64 --entrypoint bash "$IMAGE" -ec \
   './env/bin/python -c "import erpnext,healthcare,solvronix_desk,smart_hospital,qy_vision_hospital,paho.mqtt.publish"; bench version' > "$DIR/out/versions.txt"
 docker run --rm -i --entrypoint ./env/bin/python "$IMAGE" < "$DIR/verify_image.py" > "$DIR/out/image-verification.json"
@@ -81,6 +84,9 @@ git -C "$ROOT" diff -- services/hospital/smart-hospital services/hospital/qy-vis
 tar -C "$CTX/upstream" -czf "$DIR/out/local-apps.tar.gz" services/hospital deploy/jetson/qy-test/provision.sh
 # Include infrastructure images so Jetson can load the complete stack offline.
 for image in "$MARIADB_IMAGE" "$REDIS_IMAGE" "$MOSQUITTO_IMAGE"; do docker pull --platform linux/arm64 "$image"; done
+# Only ephemeral GitHub runners: reclaim obsolete build layers, never operator data.
+if [[ "${GITHUB_ACTIONS:-}" == true ]]; then docker builder prune -af; fi
 docker save "$IMAGE" "$MARIADB_IMAGE" "$REDIS_IMAGE" "$MOSQUITTO_IMAGE" | gzip > "$DIR/out/qy-arm64-images.tar.gz"
+python3 "$DIR/verify_archive.py" "$DIR/out/qy-arm64-images.tar.gz" > "$DIR/out/archive-verification.json"
 (cd "$DIR/out" && sha256sum qy-arm64-images.tar.gz > SHA256SUMS)
 echo "Ready: $DIR/out/qy-arm64-images.tar.gz"

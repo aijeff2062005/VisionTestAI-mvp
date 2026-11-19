@@ -11,7 +11,13 @@ try:
     from frappe.utils.file_manager import save_file
     marker = 'qy-release-acceptance.txt'
     existing = frappe.db.get_value('File', {'file_name':marker}, 'name')
-    if os.environ.get('CHECK_PERSISTENCE') == '1':
+    if os.environ.get('BREAK_PERSISTENCE') == '1':
+        assert existing
+        frappe.delete_doc('File', existing)
+        frappe.db.commit()
+        assert not frappe.db.exists('File', existing)
+        print('Synthetic acceptance file removed before restore drill')
+    elif os.environ.get('CHECK_PERSISTENCE') == '1':
         assert existing, 'File row missing after restart/restore'
         document=frappe.get_doc('File',existing)
         assert Path(document.get_full_path()).read_text() == 'QY native ARM64 persistence'

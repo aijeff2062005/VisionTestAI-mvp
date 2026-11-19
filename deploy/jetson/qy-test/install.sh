@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+INSTALL_START=$SECONDS
 cd "$(dirname "$0")"
 [[ $(uname -m) == aarch64 ]] || { echo 'Installer requires a native ARM64 Jetson.' >&2; exit 1; }
 [[ $EUID == 0 ]] || { echo 'Run: sudo ./install.sh' >&2; exit 1; }
@@ -11,7 +12,6 @@ command -v curl >/dev/null
 docker info >/dev/null
 systemctl enable docker >/dev/null
 BUNDLE_DIR="${BUNDLE_DIR:-$PWD/out}"
-INSTALL_START=$SECONDS
 (cd "$BUNDLE_DIR" && sha256sum -c SHA256SUMS)
 # Preserve existing configuration and generated credentials on every rerun.
 if [[ ! -f .env ]]; then
@@ -66,6 +66,8 @@ done
 printf 'Site ready: %s/desk/visioncare\nUser: Administrator\nCredentials: %s/.env (root-readable)\n' "$QY_BASE_URL" "$PWD"
 echo 'Frontend routes LAN requests to the configured site; AC must use the reported URL.'
 
+remaining_kb=$(awk '/MemAvailable:/{print $2}' /proc/meminfo)
+(( remaining_kb >= 1048576 )) || { echo 'Services started but memory is below 1 GiB guardrail; not accepted. Inspect resource usage before proceeding.' >&2; exit 1; }
 export INSTALL_ELAPSED_SECONDS=$((SECONDS - INSTALL_START))
 python3 - <<'PYREPORT'
 import json, os, platform, time

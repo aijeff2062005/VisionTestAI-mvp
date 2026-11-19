@@ -27,9 +27,12 @@ for entry in manifest.values():
         assert (manifest_path.parent / entry['file']).is_file(), entry['file']
 portal_socket = (bench / 'apps/healthcare/patient_portal/src/socket.js').read_text()
 assert 'window.location.origin' in portal_socket and 'socketio_port' not in portal_socket
-rolldown = json.loads((bench / 'apps/erpnext/banking/node_modules/rolldown/package.json').read_text())
-assert rolldown['version'] == '1.2.18'
-for module in ['MySQLdb', 'paho.mqtt.publish', 'pyarrow', 'duckdb', 'orjson', 'PIL.Image',
+assert json.loads((bench / 'qy-build-tools.json').read_text())['rolldown'] == '1.2.18'
+assert not (bench / 'apps/erpnext/banking/node_modules').exists()
+import shutil
+assert shutil.which('gcc') is None, 'Compiler leaked into runtime'
+assert (bench / 'qy-source-lock.json').is_file()
+for module in ['MySQLdb', 'cryptography', 'lxml.etree', 'paho.mqtt.publish', 'pyarrow', 'duckdb', 'orjson', 'PIL.Image',
                'smart_hospital.api.vision', 'smart_hospital.api.send_vision_measurement',
                'smart_hospital.api.face_identity', 'qy_vision_hospital.api.clinic_roles',
                'qy_vision_hospital.api.xml_intake']:

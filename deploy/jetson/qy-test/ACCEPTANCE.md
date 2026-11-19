@@ -20,3 +20,10 @@ requires a maintenance window and resource monitoring before adding this stack.
 
 No image-size, install-time or concurrency limits were supplied by the owner.
 Record agreed limits here; do not invent a passing threshold after measurement.
+
+Owner decision: no formal size, installation-time or concurrency thresholds yet.
+Record actual image/archive bytes, install elapsed seconds, CI machine specs and
+1/3/5 distinct authenticated users on read-only patient/queue endpoints in
+acceptance-measurements.json. These are characterization measurements, not a
+maximum supported user count or proof of clinical workload capacity. Attachment
+upload maximum is separately unmeasured. All performance criteria stay UNDECIDED.
