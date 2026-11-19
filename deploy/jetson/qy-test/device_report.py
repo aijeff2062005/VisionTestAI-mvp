@@ -21,5 +21,6 @@ while True:
 model=Path('/proc/device-tree/model')
 report={'thresholds':'UNDECIDED; memory guardrail only','architecture':platform.machine(),'kernel':platform.release(),'os_release':Path('/etc/os-release').read_text(),'model':model.read_text().strip('\0') if model.exists() else 'not a Jetson device-tree','samples':samples,'oom_kill_delta':oom()-start_oom,'min_available_kib':min(s['memory_kib']['MemAvailable'] for s in samples),'swap_growth_kib':samples[-1]['memory_kib']['SwapUsed']-samples[0]['memory_kib']['SwapUsed'],'clinical_flow_verified':False,'physical_reboot_verified':False,'offline_fresh_install_verified':False}
 report['memory_guardrail_observed']=report['min_available_kib']>=1048576 and report['oom_kill_delta']==0
+report['swap_trend_requires_review']=report['swap_growth_kib']>0
 Path(args.output).write_text(json.dumps(report,indent=2))
 print('Saved',args.output,'; no production-readiness conclusion is implied.')

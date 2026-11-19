@@ -50,7 +50,8 @@ data through a separately authorized migration; do not copy live production DB.
 Site creation and migration run in the one-time provision container. Reboot only
 restarts persistent containers, not install.sh; running installer again may rerun
 migration, but retains the database. Preserve all named Docker volumes on NVMe.
-Docker logs rotate at 10 MB x 3 per service. Application logs use Frappe logging.
+CPU and RAM limits are starting profiles for this 8 GB Orin Nano; validate them
+under the actual AC workload. Docker logs rotate at 10 MB x 3 per service. Application logs use Frappe logging.
 Check `docker compose ps -a`, `docker compose logs --tail=100 provision` and
 `sudo docker stats`; credentials should never be pasted into tickets.
 
@@ -91,3 +92,20 @@ services healthy, login and the same database/file data. Record uptime and the
 reboot event separately. A container restart in CI is not a Jetson reboot.
 Record offline installation by disconnecting the external network before running
 the installer on a fresh device. Do not disconnect an active production station.
+
+## Single-command offline distribution
+
+The release artifact now contains `qy-jetson-install.run` and `SHA256SUMS.run`.
+After downloading/extracting the Actions artifact, verify `sha256sum -c
+SHA256SUMS.run`, then run exactly:
+
+```bash
+sudo bash qy-jetson-install.run
+```
+
+This self-extracting file contains all images, configuration, installer and Docker
+packages. It installs into /opt/visiontestai-qy by default, retaining .env and data
+on rerun. `sudo QY_INSTALL_DIR=/absolute/path bash qy-jetson-install.run` overrides
+that directory. `bash qy-jetson-install.run --extract-only DIR` unpacks the three
+transfer files for inspection without installing Docker or starting services.
+The total installer timing includes extraction when invoked through this bundle.

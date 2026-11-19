@@ -64,6 +64,7 @@ services:
       timeout: 5s
       retries: 12
     pull_policy: never
+    cpus: 0.25
   redis-queue:
     image: ${REDIS_IMAGE:?}
     platform: linux/arm64
@@ -89,6 +90,7 @@ services:
       timeout: 5s
       retries: 12
     pull_policy: never
+    cpus: 0.25
   mqtt:
     user: 1883:1883
     image: ${MOSQUITTO_IMAGE:?}
@@ -136,6 +138,7 @@ services:
       listing.replace(sites / \"apps.txt\")\n"
     logging: *id001
     mem_limit: 1024m
+    cpus: 1
   provision:
     image: ${CUSTOM_IMAGE:?}
     platform: linux/arm64
@@ -159,6 +162,7 @@ services:
       STATION_ID: ${STATION_ID:?}
     logging: *id001
     mem_limit: 1024m
+    cpus: 2
   backend:
     image: ${CUSTOM_IMAGE:?}
     platform: linux/arm64
@@ -182,6 +186,7 @@ services:
       start_period: 60s
       retries: 6
     mem_limit: 768m
+    cpus: 1
   websocket:
     image: ${CUSTOM_IMAGE:?}
     platform: linux/arm64
@@ -204,6 +209,7 @@ services:
       start_period: 60s
       retries: 6
     mem_limit: 192m
+    cpus: 0.5
   worker:
     image: ${CUSTOM_IMAGE:?}
     platform: linux/arm64
@@ -230,6 +236,7 @@ services:
     environment:
       QY_SITE: ${QY_SITE:?}
     mem_limit: 512m
+    cpus: 1
   scheduler:
     image: ${CUSTOM_IMAGE:?}
     platform: linux/arm64
@@ -252,6 +259,7 @@ services:
       start_period: 60s
       retries: 6
     mem_limit: 256m
+    cpus: 0.25
   frontend:
     image: ${CUSTOM_IMAGE:?}
     platform: linux/arm64
@@ -287,6 +295,7 @@ services:
       start_period: 60s
       retries: 6
     mem_limit: 128m
+    cpus: 0.25
 volumes:
   sites: null
   logs: null

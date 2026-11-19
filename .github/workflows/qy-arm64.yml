@@ -38,9 +38,12 @@ jobs:
         if: inputs.reuse_run_id != ''
         run: |
           cd deploy/jetson/qy-test
+          if [ ! -f out/qy-arm64-images.tar.gz ]; then
+            bash out/qy-jetson-install.run --extract-only out
+          fi
           previous=$(cat out/local-repo.commit)
           git fetch --depth=1 origin "$previous"
-          git diff --exit-code "$previous" HEAD -- ../../../services/hospital Dockerfile healthcheck.py provision.sh prepare_recipe.py patch_portal.py verify_sources.py versions.env sources.lock.json
+          git diff --exit-code "$previous" HEAD -- ../../../services/hospital Dockerfile build.sh healthcheck.py provision.sh prepare_recipe.py patch_portal.py verify_sources.py versions.env sources.lock.json
           python3 verify_archive.py out/qy-arm64-images.tar.gz > out/archive-verification.json
           tar -xzf out/qy-jetson-config.tar.gz -C out docker-debs
           docker load -i out/qy-arm64-images.tar.gz
@@ -82,9 +85,8 @@ jobs:
           name: qy-arm64-release-${{ github.run_number }}
           compression-level: 0
           path: |
-            deploy/jetson/qy-test/out/qy-arm64-images.tar.gz
-            deploy/jetson/qy-test/out/qy-jetson-config.tar.gz
-            deploy/jetson/qy-test/out/SHA256SUMS
+            deploy/jetson/qy-test/out/qy-jetson-install.run
+            deploy/jetson/qy-test/out/SHA256SUMS.run
             deploy/jetson/qy-test/out/*verification.json
             deploy/jetson/qy-test/out/*metadata.json
             deploy/jetson/qy-test/out/acceptance*.json

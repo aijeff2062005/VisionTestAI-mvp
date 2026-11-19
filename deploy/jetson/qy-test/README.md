@@ -27,3 +27,20 @@ QEMU test1 build. They do not certify the native release. Existing out/ files on
 Coder are still that historical build until explicitly replaced by a successful
 native release artifact. No production-ready claim is made without real Jetson
 acceptance, agreed performance limits and a successful restore drill.
+
+## Single-command offline distribution
+
+The release artifact now contains `qy-jetson-install.run` and `SHA256SUMS.run`.
+After downloading/extracting the Actions artifact, verify `sha256sum -c
+SHA256SUMS.run`, then run exactly:
+
+```bash
+sudo bash qy-jetson-install.run
+```
+
+This self-extracting file contains all images, configuration, installer and Docker
+packages. It installs into /opt/visiontestai-qy by default, retaining .env and data
+on rerun. `sudo QY_INSTALL_DIR=/absolute/path bash qy-jetson-install.run` overrides
+that directory. `bash qy-jetson-install.run --extract-only DIR` unpacks the three
+transfer files for inspection without installing Docker or starting services.
+The total installer timing includes extraction when invoked through this bundle.

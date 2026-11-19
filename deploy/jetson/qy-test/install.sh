@@ -13,6 +13,7 @@ docker info >/dev/null
 systemctl enable docker >/dev/null
 BUNDLE_DIR="${BUNDLE_DIR:-$PWD/out}"
 (cd "$BUNDLE_DIR" && sha256sum -c SHA256SUMS)
+env_created=0
 # Preserve existing configuration and generated credentials on every rerun.
 if [[ ! -f .env ]]; then
   umask 077
@@ -39,12 +40,26 @@ for key in ('MQTT_PASSWORD', 'FRAPPE_ADMIN_PASSWORD', 'FRAPPE_DB_ROOT_PASSWORD')
     if not values[key]: values[key] = secrets.token_hex(24)
 Path('.env').write_text(''.join(f'{k}={shlex.quote(v)}\n' for k,v in values.items()))
 PY
+  env_created=1
 fi
 chmod 600 .env
 set -a
 source .env
 set +a
 : "${QY_SITE:?}" "${FRONTEND_PORT:?}" "${CUSTOM_IMAGE:?}"
+if (( env_created )) && [[ -n $(docker volume ls -q --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME") ]]; then
+  rm .env
+  echo 'Existing project data found without its .env. Restore the original credentials before installing.' >&2
+  exit 1
+fi
+for container in $(docker ps -aq --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME"); do
+  previous_dir=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$container")
+  if [[ -n "$previous_dir" && "$previous_dir" != "$PWD" ]]; then
+    (( env_created == 0 )) || rm .env
+    printf 'Project already belongs to %s. Use that deployment directory instead.\n' "$previous_dir" >&2
+    exit 1
+  fi
+done
 # Validate before starting or loading anything.
 docker compose --env-file .env config --quiet
 available_kb=$(awk '/MemAvailable:/{print $2}' /proc/meminfo)
@@ -74,7 +89,7 @@ echo 'Frontend routes LAN requests to the configured site; AC must use the repor
 
 remaining_kb=$(awk '/MemAvailable:/{print $2}' /proc/meminfo)
 (( remaining_kb >= 1048576 )) || { echo 'Services started but memory is below 1 GiB guardrail; not accepted. Inspect resource usage before proceeding.' >&2; exit 1; }
-export INSTALL_ELAPSED_SECONDS=$((SECONDS - INSTALL_START))
+export INSTALL_ELAPSED_SECONDS=$(( $(date +%s) - ${QY_BUNDLE_STARTED_AT:-$(( $(date +%s) - SECONDS + INSTALL_START ))} ))
 python3 - <<'PYREPORT'
 import json, os, platform, time
 from pathlib import Path
