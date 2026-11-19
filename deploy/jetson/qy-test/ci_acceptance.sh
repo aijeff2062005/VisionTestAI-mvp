@@ -6,6 +6,8 @@ cd "$(dirname "$0")"
 [[ ${GITHUB_ACTIONS:-} == true && ! -e .env ]] || { echo 'Requires fresh GitHub runner'; exit 1; }
 export QY_SITE=qy-ci.lan QY_BASE_URL=http://127.0.0.1:18080 STATION_ID=qy-ci-01
 sudo -E READY_TIMEOUT_SECONDS=1800 ./install.sh
+# CI owns the ephemeral credentials file; production installer keeps it root-only.
+sudo chown "$(id -u):$(id -g)" .env
 set -a; source .env; set +a
 for secret in "$FRAPPE_ADMIN_PASSWORD" "$FRAPPE_DB_ROOT_PASSWORD" "$MQTT_PASSWORD"; do printf '::add-mask::%s\n' "$secret"; done
 # Login proves an actual site rather than a static proxy health response.
@@ -30,7 +32,9 @@ backup="$PWD/out/ci-backup"
 sudo ./backup.sh "$backup"
 docker compose exec -T -e BREAK_PERSISTENCE=1 backend ./env/bin/python < runtime_acceptance.py
 sudo ./rollback.sh "$backup" --restore-data
+sudo chown "$(id -u):$(id -g)" .env
 docker compose exec -T -e CHECK_PERSISTENCE=1 backend ./env/bin/python < runtime_acceptance.py > out/acceptance-restore.json
 python3 load_acceptance.py
-cp install-report.json out/acceptance-install.json
+sudo cp install-report.json out/acceptance-install.json
+sudo chown "$(id -u):$(id -g)" out/acceptance-install.json
 docker compose ps -a
