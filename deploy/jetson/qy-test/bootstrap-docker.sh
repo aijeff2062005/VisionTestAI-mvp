@@ -29,7 +29,12 @@ fi
 [[ -d docker-debs ]] || { echo 'Offline Docker packages missing from bundle'; exit 1; }
 (cd docker-debs && sha256sum -c SHA256SUMS)
 # No network fallback: every required .deb must already be present.
-apt-get --no-download --no-install-recommends -y install "$PWD"/docker-debs/*.deb
+# APT --no-download resolves upgraded base packages through its archive cache.
+# Seed that cache explicitly; installing directly from another folder can fail
+# with a non-absolute cached pathname on Jammy's APT.
+install -d -m 0755 /var/cache/apt/archives
+cp "$PWD"/docker-debs/*.deb /var/cache/apt/archives/
+apt-get --no-download --no-install-recommends -y install /var/cache/apt/archives/*.deb
 systemctl enable --now docker
 systemctl is-active --quiet docker
 docker compose version
