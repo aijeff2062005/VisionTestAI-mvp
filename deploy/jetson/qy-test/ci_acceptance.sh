@@ -7,6 +7,7 @@ cd "$(dirname "$0")"
 export QY_SITE=qy-ci.lan QY_BASE_URL=http://127.0.0.1:18080 STATION_ID=qy-ci-01
 sudo -E READY_TIMEOUT_SECONDS=1800 ./install.sh
 set -a; source .env; set +a
+for secret in "$FRAPPE_ADMIN_PASSWORD" "$FRAPPE_DB_ROOT_PASSWORD" "$MQTT_PASSWORD"; do printf '::add-mask::%s\n' "$secret"; done
 # Login proves an actual site rather than a static proxy health response.
 python3 - <<'PY'
 import os, urllib.request, urllib.parse, http.cookiejar
@@ -21,8 +22,8 @@ print('Administrator login and authenticated Desk route: PASS')
 PY
 docker compose exec -T backend ./env/bin/python < runtime_acceptance.py > out/acceptance-runtime.json
 # Full container stop/start tests volume survival, not a physical device reboot.
-docker compose stop
-docker compose start
+docker compose stop db redis-cache redis-queue mqtt backend frontend worker scheduler websocket
+docker compose start db redis-cache redis-queue mqtt backend frontend worker scheduler websocket
 bash ./wait-ready.sh
 docker compose exec -T -e CHECK_PERSISTENCE=1 backend ./env/bin/python < runtime_acceptance.py > out/acceptance-restart.json
 backup="$PWD/out/ci-backup"

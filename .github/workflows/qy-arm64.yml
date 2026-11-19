@@ -54,5 +54,9 @@ jobs:
             deploy/jetson/qy-test/out/visioncare-native-arm64.png
             deploy/jetson/qy-test/out/*verification.txt
             deploy/jetson/qy-test/out/*.lock
+            deploy/jetson/qy-test/out/source-lock.json
+            deploy/jetson/qy-test/out/all-images-inspect.json
+            deploy/jetson/qy-test/out/versions.txt
+            deploy/jetson/qy-test/out/local-repo.commit
             build-native.log
           retention-days: 7

@@ -84,6 +84,7 @@ git -C "$ROOT" diff -- services/hospital/smart-hospital services/hospital/qy-vis
 tar -C "$CTX/upstream" -czf "$DIR/out/local-apps.tar.gz" services/hospital deploy/jetson/qy-test/provision.sh
 # Include infrastructure images so Jetson can load the complete stack offline.
 for image in "$MARIADB_IMAGE" "$REDIS_IMAGE" "$MOSQUITTO_IMAGE"; do docker pull --platform linux/arm64 "$image"; done
+docker image inspect "$IMAGE" "$MARIADB_IMAGE" "$REDIS_IMAGE" "$MOSQUITTO_IMAGE" > "$DIR/out/all-images-inspect.json"
 # Only ephemeral GitHub runners: reclaim obsolete build layers, never operator data.
 if [[ "${GITHUB_ACTIONS:-}" == true ]]; then docker builder prune -af; fi
 docker save "$IMAGE" "$MARIADB_IMAGE" "$REDIS_IMAGE" "$MOSQUITTO_IMAGE" | gzip > "$DIR/out/qy-arm64-images.tar.gz"

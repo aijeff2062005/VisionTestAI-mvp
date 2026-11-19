@@ -80,3 +80,14 @@ A failed-run artifact must not be deployed. Agree size/time/concurrency limits
 before final acceptance. Keep >=1 GiB MemAvailable with no sustained swap growth.
 With only 1.7 GiB currently available, schedule a maintenance window before
 starting this stack beside AC. Never auto-stop or modify production services.
+
+## Device evidence collection
+
+During the real measurement acceptance session run
+`sudo python3 device_report.py --seconds 300 --output device-report.json`.
+The sampler reads memory/swap/OOM counters; it does not start or reconfigure AC.
+After a physical reboot verify `systemctl is-enabled docker`, all persistent
+services healthy, login and the same database/file data. Record uptime and the
+reboot event separately. A container restart in CI is not a Jetson reboot.
+Record offline installation by disconnecting the external network before running
+the installer on a fresh device. Do not disconnect an active production station.
