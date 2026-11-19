@@ -15,6 +15,8 @@ for app in [*expected, 'smart_hospital', 'qy_vision_hospital']:
     if app in expected:
         assert versions[app] == expected[app], (app, versions[app])
 assert not (bench / 'apps/tv_vision_hospital').exists()
+page_css = bench / 'apps/qy_vision_hospital/qy_vision_hospital/qy_vision_hospital/page/visioncare/visioncare.css'
+assert 'fonts.googleapis.com' not in page_css.read_text(), 'Offline UI must not import Google fonts'
 assert not (bench / 'sites/frontend').exists()
 assert (bench / 'assets/qy_vision_hospital/js/clinic_shell.js').is_file()
 assert list((bench / 'assets/frappe/dist/js').glob('desk.bundle.*.js'))
