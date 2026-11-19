@@ -11,7 +11,10 @@ try:
     assert frappe.db.exists('Page','visioncare')
     from frappe.utils.file_manager import save_file
     marker = 'qy-release-acceptance.txt'
-    existing = frappe.db.get_value('File', {'file_name':marker}, 'name')
+    metadata = Path(frappe.get_site_path('private','qy-acceptance-marker.json'))
+    recorded = json.loads(metadata.read_text()) if metadata.exists() else {}
+    existing = recorded.get('file_id')
+    if existing and not frappe.db.exists('File', existing): existing = None
     if os.environ.get('BREAK_PERSISTENCE') == '1':
         assert existing
         frappe.delete_doc('File', existing)
@@ -23,8 +26,13 @@ try:
         document=frappe.get_doc('File',existing)
         assert Path(document.get_full_path()).read_text() == 'QY native ARM64 persistence'
     else:
-        if not existing: save_file(marker,b'QY native ARM64 persistence',None,None,is_private=1)
+        if not existing:
+            document = save_file(marker,b'QY native ARM64 persistence','User','Administrator',is_private=1)
+            existing = document.name
+            metadata.write_text(json.dumps({'file_id':existing,'file_name':document.file_name,'file_url':document.file_url}))
         frappe.db.commit()
+        assert frappe.db.exists('File', existing), 'Attachment was not committed'
+        assert Path(frappe.get_doc('File',existing).get_full_path()).read_text() == 'QY native ARM64 persistence'
         from frappe.utils.pdf import get_pdf
         from pypdf import PdfReader
         pdf=get_pdf('<html><body><h1>QY ARM64 report</h1><p>VisionCare acceptance 123</p></body></html>')
@@ -39,6 +47,7 @@ try:
             if job.is_failed: raise AssertionError(job.exc_info)
             time.sleep(2)
         assert job.is_finished, 'Background job timeout'
+        frappe.db.commit()
     print(json.dumps({'apps':apps,'visioncare_page':'PASS','persistence':'PASS', 'mode':'after_restart_or_restore' if os.environ.get('CHECK_PERSISTENCE') else 'pdf_and_worker'}))
 finally:
     frappe.destroy()

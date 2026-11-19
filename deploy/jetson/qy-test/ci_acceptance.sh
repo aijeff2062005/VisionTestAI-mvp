@@ -26,7 +26,16 @@ docker compose exec -T backend ./env/bin/python < runtime_acceptance.py > out/ac
 docker compose cp "backend:/home/frappe/frappe-bench/sites/$QY_SITE/private/files/qy-arm64-report.pdf" out/qy-arm64-report.pdf
 # Full container stop/start tests volume survival, not a physical device reboot.
 docker compose stop db redis-cache redis-queue mqtt backend frontend worker scheduler websocket
-docker compose start db redis-cache redis-queue mqtt backend frontend worker scheduler websocket
+# Docker Engine boot does not rerun restart:no provisioning containers.
+# Compose start traverses dependencies and can rerun them, so use Engine start.
+mapfile -t infrastructure < <(docker compose ps -aq db redis-cache redis-queue mqtt)
+docker start "${infrastructure[@]}"
+for attempt in $(seq 1 60); do
+  [[ $(docker inspect --format '{{.State.Health.Status}}' "$(docker compose ps -q db)") == healthy ]] && break
+  sleep 2
+done
+mapfile -t applications < <(docker compose ps -aq backend frontend worker scheduler websocket)
+docker start "${applications[@]}"
 bash ./wait-ready.sh
 docker compose exec -T -e CHECK_PERSISTENCE=1 backend ./env/bin/python < runtime_acceptance.py > out/acceptance-restart.json
 backup="$PWD/out/ci-backup"
