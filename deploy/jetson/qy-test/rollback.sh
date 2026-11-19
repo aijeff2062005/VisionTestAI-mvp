@@ -28,8 +28,15 @@ for candidate in /backup/*-files*.tgz /backup/*-files*.tar; do
   [[ "$candidate" == *-private-files* ]] || public+=("$candidate")
 done
 [[ ${#db[@]} == 1 && ${#public[@]} == 1 && ${#private[@]} == 1 ]]
+# Keep the host backup root-only. Give the non-root bench process a private
+# temporary copy inside this disposable container rather than relaxing host modes.
+stage=$(mktemp -d /tmp/qy-restore.XXXXXX)
+cp "${db[0]}" "${public[0]}" "${private[0]}" "$stage/"
+chown -R 1000:0 "$stage"
+chmod 700 "$stage"
 # Set DB credentials through the environment, not host process arguments.
-runuser -u frappe -- bench --site "$QY_SITE" --force restore "${db[0]}" --db-root-password "$FRAPPE_DB_ROOT_PASSWORD" --with-public-files "${public[0]}" --with-private-files "${private[0]}"
+runuser -u frappe -- bench --site "$QY_SITE" --force restore "$stage/$(basename "${db[0]}")" --db-root-password "$FRAPPE_DB_ROOT_PASSWORD" --with-public-files "$stage/$(basename "${public[0]}")" --with-private-files "$stage/$(basename "${private[0]}")"
+rm -rf "$stage"
 '
 cp "$backup/deployment.env" .env
 # Save the digest as runtime selection so tag reuse cannot silently select a new image.
