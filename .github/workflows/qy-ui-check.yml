@@ -1,0 +1,46 @@
+name: Diagnose QY UI on native ARM64
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  ui:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: qy-arm64-release-*
+          run-id: 44508617056
+          merge-multiple: true
+          github-token: ${{ github.token }}
+      - name: Start native image with candidate CSS override for diagnosis
+        run: |
+          test "$(uname -m)" = aarch64
+          cd deploy/jetson/qy-test
+          export QY_CSS="$GITHUB_WORKSPACE/services/hospital/qy-vision-hospital/qy_vision_hospital/qy_vision_hospital/page/visioncare/visioncare.css"
+          printf 'services:\n  backend:\n    volumes:\n      - ${QY_CSS}:/home/frappe/frappe-bench/apps/qy_vision_hospital/qy_vision_hospital/qy_vision_hospital/page/visioncare/visioncare.css:ro\n' > out/ui-override.yml
+          export COMPOSE_FILE="$PWD/compose.yml:$PWD/out/ui-override.yml"
+          export QY_SITE=qy-ci.lan QY_BASE_URL=http://127.0.0.1:18080 STATION_ID=qy-ci-01
+          sudo -E bash install.sh
+          sudo chown "$(id -u):$(id -g)" .env
+      - name: Render and collect browser diagnostics
+        run: |
+          python3 -m venv /tmp/qy-browser
+          /tmp/qy-browser/bin/pip install playwright==1.56.0
+          /tmp/qy-browser/bin/playwright install --with-deps chromium
+          cd deploy/jetson/qy-test
+          set -a
+          source .env
+          set +a
+          /tmp/qy-browser/bin/python browser_acceptance.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qy-ui-diagnostics
+          path: |
+            deploy/jetson/qy-test/out/acceptance-browser.json
+            deploy/jetson/qy-test/out/visioncare-native-arm64.png
+          retention-days: 3
