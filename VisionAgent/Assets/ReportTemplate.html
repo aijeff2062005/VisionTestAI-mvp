@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Báo cáo đo thị lực</title>
+<style>
+:root { --navy:#17324d; --blue:#286a9b; --teal:#13877d; --ink:#243447; --muted:#718096; --line:#dce5ec; --pale:#f1f6f9; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#e8edf1; color:var(--ink); font:14px/1.45 Inter,"Segoe UI",Arial,sans-serif; }
+    .toolbar { height:58px; display:flex; align-items:center; justify-content:space-between; padding:0 max(24px,calc((100vw - 1100px)/2)); background:#fff; border-bottom:1px solid #d8e0e7; color:#334155; }
+    .toolbar .title { font-size:14px; font-weight:650; }
+    .actions { display:flex; gap:10px; align-items:center; color:#718096; font-size:12px; }
+    .pill { background:#edf3f7; border-radius:20px; padding:7px 12px; }
+    .button { border:0; border-radius:7px; background:var(--navy); color:white; padding:9px 15px; font-size:12px; font-weight:650; }
+    .viewer { padding:28px 16px 50px; }
+    .page { position:relative; width:min(794px,100%); min-height:1123px; margin:0 auto; padding:45px 48px 42px; background:white; box-shadow:0 8px 30px #26394c22; }
+    .hospital { display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:18px; border-bottom:2px solid var(--navy); }
+    .running-header { align-items:center; padding-bottom:12px; }
+    .detail-page-label { color:#718293; font-size:8px; font-weight:700; letter-spacing:.1em; }
+    .stats.summary-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .summary-table th { padding:10px 11px; }
+    .summary-table td { padding:9px 11px; }
+    .summary-table tbody tr:nth-child(even) { background:#f7fafb; }
+    .summary-table td:first-child { color:#263b50; }
+    .detail-title { padding:14px 0 10px; }
+    .detail-page .hospital-name { font-size:12px; }
+    .detail-page .patient-panel { margin-top:6px; }
+    .detail-page .patient-panel-head { padding:10px 13px; }
+    .detail-page .vision-scores { padding:9px 12px; }
+    .detail-page .trials-table th { padding:6px 9px; }
+    .detail-page .trials-table td { padding:5px 9px; }
+    .brand { display:flex; gap:14px; align-items:center; }
+    .logo { width:76px; height:76px; flex:0 0 76px; border:1px solid #d6e2e9; border-radius:50%; background:#fff; display:grid; place-items:center; overflow:hidden; }
+    .logo img { display:block; width:100%; height:100%; object-fit:contain; }
+    .hospital-name { color:var(--navy); font-size:15px; font-weight:750; letter-spacing:.035em; }
+    .hospital-sub { margin-top:4px; color:var(--muted); font-size:11px; }
+    .contact { max-width:245px; text-align:right; color:#66788a; font-size:10.5px; line-height:1.65; }
+    .report-title { padding:23px 0 18px; text-align:center; }
+    .eyebrow { color:var(--teal); text-transform:uppercase; letter-spacing:.16em; font-size:9px; font-weight:750; }
+    h1 { margin:5px 0 3px; color:var(--navy); font-size:22px; letter-spacing:.025em; }
+    .date-line { color:#607184; font-size:11px; }
+    .date-line strong { color:#34495e; }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:0 0 18px; }
+    .stat { padding:11px 13px; border:1px solid var(--line); border-radius:8px; background:#fbfdfe; }
+    .stat-label { color:var(--muted); font-size:9px; text-transform:uppercase; letter-spacing:.08em; }
+    .stat-value { margin-top:2px; color:var(--navy); font-size:20px; font-weight:750; }
+    .stat-note { color:#8090a0; font-size:9px; }
+    .patient-panel { margin-top:8px; border:1px solid #d9e5eb; border-radius:12px; overflow:hidden; box-shadow:0 3px 12px #17324d0a; }
+    .patient-panel-head { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:14px 16px; background:linear-gradient(110deg,#f5f9fb,#fff); border-bottom:1px solid #e2eaf0; }
+    .patient-name-large { color:var(--navy); font-size:15px; font-weight:750; }
+    .patient-meta { display:flex; flex-wrap:wrap; gap:5px 14px; margin-top:7px; color:#718293; font-size:9px; }
+    .patient-meta strong { color:#3b5368; font-weight:650; }
+    .trial-count { flex:0 0 auto; padding:7px 11px; border:1px solid #dce7ff; border-radius:18px; background:#f0f4ff; color:#315fbd; font-size:9px; font-weight:700; }
+    .vision-scores { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; padding:13px 15px 15px; }
+    .vision-score { padding:10px 12px; border:1px solid #e0e9ee; border-radius:8px; background:#fbfdfe; }
+    .vision-score-label { color:#718594; font-size:8px; font-weight:650; text-transform:uppercase; letter-spacing:.08em; }
+    .vision-score-value { margin-top:3px; color:#174854; font-size:19px; font-weight:750; }
+    .trials-heading { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:0 15px; padding:10px 0 8px; border-top:1px solid #e9eff2; }
+    .trials-heading strong { color:#273d50; font-size:10px; }
+    .trials-heading span { color:#75889a; font-size:8px; }
+    .trials-table { font-size:9px; }
+    .trials-table thead { background:#eef5f7; color:#35576b; }
+    .trials-table th { padding:9px 11px; font-size:8px; }
+    .trials-table td { padding:8px 11px; }
+    .trials-table tbody tr:nth-child(even) { background:#f8fbfc; }
+    .eye-label { display:inline-block; min-width:42px; padding:3px 7px; border-radius:12px; background:#edf5f8; color:#3e6273; text-align:center; font-size:8px; font-weight:650; }
+    .result-ok { color:#18806f; font-weight:650; }
+    .section-heading { display:flex; justify-content:space-between; align-items:center; margin:0 0 8px; }
+    .section-heading h2 { margin:0; color:var(--navy); font-size:12px; }
+    .section-heading span { color:#8391a0; font-size:9px; }
+    table { width:100%; border-collapse:collapse; font-size:9.5px; }
+    thead { background:var(--navy); color:white; }
+    th { padding:9px 7px; text-align:left; font-size:8px; font-weight:650; letter-spacing:.045em; text-transform:uppercase; }
+    td { padding:7px 7px; border-bottom:1px solid #e7edf1; vertical-align:middle; }
+    tbody tr:nth-child(even) { background:#f7fafb; }
+    .num { width:30px; color:#8291a0; }
+    .patient { font-weight:650; color:#263b50; }
+    .code { color:#78899a; font-size:8.5px; }
+    .score { display:inline-block; min-width:38px; padding:3px 6px; border-radius:4px; background:#eaf5f3; color:#147469; text-align:center; font-weight:750; }
+    .station { color:#566b7e; }
+    .below { color:#a45239; background:#fbf0eb; }
+    .disclaimer { margin-top:15px; padding:9px 11px; border-left:3px solid #71aaa3; background:#f2f8f7; color:#5e7276; font-size:9px; }
+    .signatures { display:grid; grid-template-columns:1fr 1fr; margin-top:25px; text-align:center; color:#536779; font-size:9px; }
+    .signatures strong { display:block; color:#31465a; font-size:10px; }
+    .sign-space { height:48px; }
+    .footer { position:static; margin-top:20px; display:flex; justify-content:space-between; border-top:1px solid var(--line); padding-top:9px; color:#8b98a5; font-size:8px; }
+    .footer b { color:#536779; }
+    @media(max-width:600px) { .toolbar { padding:0 12px; } .toolbar .title { max-width:48%; } .actions .pill { display:none; } .viewer { padding:12px 0; } .page { padding:28px 22px 45px; min-height:1050px; } .contact { display:none; } h1 { font-size:17px; } table { font-size:8px; } th,td { padding:7px 4px; } .footer { left:22px; right:22px; } }
+    @media print { body { background:white; } .toolbar { display:none; } .viewer { padding:0; } .page { width:210mm; min-height:297mm; margin:0; padding:13mm 13mm 12mm; box-shadow:none; page-break-after:always; break-after:page; } @page { size:A4; margin:0; } }
+    @media print { .patient-panel { break-inside: avoid; page-break-inside: avoid; } }
+</style>
+</head>
+<body><main class="viewer">{{REPORT_PAGE}}</main></body>
+</html>

@@ -1,0 +1,86 @@
+# Clinic step IDs (orchestrator / DMN) → wavs in vi/{male|female}/.
+# Player loads this file only; gender resolves to vi/{male|female}/<clip>.wav.
+# Clip names come from vi/{male|female}/metadata.json (id + filename + text).
+steps:
+  b1_face_scan:
+    audio: null
+    message_vi: "Vui lòng nhìn vào máy nhận diện khuôn mặt để xác nhận bệnh nhân."
+  b1_face_register:
+    audio: null
+    message_vi: "Bạn chưa có trong hệ thống. Vui lòng đăng ký trên máy Face ID để được đo, rồi nhìn lại máy để xác nhận."
+  b1_face_greet:
+    audio: welcome_ready.wav
+    message_vi: "Xin chào {name}. Bắt đầu phiên đo thị lực."
+  b1_input_mode_choice:
+    audio: input_mode_choose.wav
+    message_vi: "Vui lòng chọn chế độ kiểm tra trên máy tính bảng."
+  b1_input_mode_tablet:
+    audio: input_mode_tablet.wav
+    message_vi: "Bạn đã chọn Trên máy tính bảng, hãy chạm vào ký tự bạn nhìn thấy trên TV rồi nhấn Xác nhận."
+  b1_input_mode_speak:
+    audio: input_mode_speak.wav
+    message_vi: "Bạn đã chọn kiểm tra bằng giọng nói, hãy đọc to ký tự xuất hiện trên màn hình TV."
+  queue_stub:
+    audio: null
+    message_vi: "Xin mời số {queue_number} vào khu vực đo thị lực."
+    display_message: true
+  # WAIT_READY plays this once while coaching stand-in-place.
+  b3_stand:
+    audio: welcome_ready.wav
+    message_vi: "Xin chào bạn. Vui lòng đứng vào khu vực chỉ định để sẵn sàng kiểm tra mắt."
+  # PLAY_AUDIO after ready. Eye = eye under test (session order: right → left).
+  b4_cover:
+    audio: cover_right_eye.wav
+    message_vi: "Bây giờ, vui lòng che mắt phải và mở mắt trái. Tiếp tục nhìn thẳng vào màn hình."
+    audio_by_eye:
+      left: cover_right_eye.wav
+      right: cover_left_eye.wav
+    message_by_eye:
+      left: "Bây giờ, vui lòng che mắt phải và mở mắt trái. Tiếp tục nhìn thẳng vào màn hình."
+      right: "Vui lòng che mắt trái và nhìn thẳng vào màn hình. Không nheo mắt và không nghiêng đầu."
+  # DMN step_id for SHOW_ROW only. Orchestrator does not play_step("b5_show").
+  b5_show:
+    audio: null
+    message_vi: "Màn hình sẽ hiển thị chữ cái. Bạn hãy đọc to chữ xuất hiện trên màn hình."
+  # Model A-only SHOW_ROW. Per-letter recognition never plays feedback audio.
+  b6_read:
+    audio: null
+    message_vi: "Bạn hãy đọc to chữ xuất hiện trên màn hình."
+  b7_stt:
+    audio: null
+    message_vi: "Đang lắng nghe..."
+  b9_record:
+    audio: null
+    message_vi: "Đã ghi nhận kết quả dòng này."
+  # SWITCH_EYE after an eye finishes; plays start_* for the *next* eye (not first eye).
+  switch_eye:
+    audio: start_right_eye.wav
+    message_vi: "Bắt đầu kiểm tra mắt phải."
+    audio_by_eye:
+      left: start_left_eye.wav
+      right: start_right_eye.wav
+    message_by_eye:
+      left: "Bắt đầu kiểm tra mắt trái."
+      right: "Bắt đầu kiểm tra mắt phải."
+  b10_results:
+    audio: test_complete.wav
+    message_vi: "Bài kiểm tra đã kết thúc. Kết quả đang được hiển thị trên màn hình. Cảm ơn bạn đã hoàn thành bài kiểm tra."
+  error_retry:
+    audio: null
+    message_vi: "Xin đọc lại chữ vừa rồi."
+  abort:
+    audio: null
+    message_vi: "Phiên đo đã hủy."
+
+# Pack texts (vi/{male|female}/metadata.json). Unused on-disk clips stay listed.
+scripts_vi: |
+  welcome_ready: Xin chào bạn. Vui lòng đứng vào khu vực chỉ định để sẵn sàng kiểm tra mắt. → b3_stand
+  position_stable: Bạn đã đứng đúng vị trí. Bài kiểm tra sẽ bắt đầu sau ba giây. (on disk; WAIT_READY has no "now ready" step)
+  cover_left_eye: Vui lòng che mắt trái và nhìn thẳng vào màn hình. Không nheo mắt và không nghiêng đầu. → b4_cover right
+  cover_right_eye: Bây giờ, vui lòng che mắt phải và mở mắt trái. Tiếp tục nhìn thẳng vào màn hình. → b4_cover left
+  start_right_eye: Bắt đầu kiểm tra mắt phải. → switch_eye right
+  start_left_eye: Bắt đầu kiểm tra mắt trái. → switch_eye left
+  right_eye_complete: Đã hoàn thành kiểm tra mắt phải. (on disk; SWITCH_EYE plays start_* of the next eye)
+  left_eye_complete: Đã hoàn thành kiểm tra mắt trái. (on disk; no "eye done" step)
+  test_complete: Bài kiểm tra đã kết thúc. Kết quả đang được hiển thị trên màn hình. Cảm ơn bạn đã hoàn thành bài kiểm tra. → b10_results
+  return_waiting: Hệ thống đã sẵn sàng cho lượt kiểm tra tiếp theo. (on disk; no post-submit prompt step)

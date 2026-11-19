@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             namespace="https://visiontestai.local/dmn/acuity"
+             name="AcuityFlow"
+             id="acuity_flow">
+  <decision id="NextAction" name="NextAction">
+    <decisionTable id="NextActionTable" hitPolicy="FIRST">
+      <input id="in_state" label="session_state">
+        <inputExpression id="expr_state" typeRef="string"><text>session_state</text></inputExpression>
+      </input>
+      <input id="in_ready" label="readiness_ok">
+        <inputExpression id="expr_ready" typeRef="boolean"><text>readiness_ok</text></inputExpression>
+      </input>
+      <input id="in_all_eyes" label="all_eyes_done">
+        <inputExpression id="expr_all_eyes" typeRef="boolean"><text>all_eyes_done</text></inputExpression>
+      </input>
+      <input id="in_cancelled" label="cancelled">
+        <inputExpression id="expr_cancelled" typeRef="boolean"><text>cancelled</text></inputExpression>
+      </input>
+      <input id="in_row_done" label="row_complete">
+        <inputExpression id="expr_row" typeRef="boolean"><text>row_complete</text></inputExpression>
+      </input>
+      <input id="in_pass_done" label="pass_complete">
+        <inputExpression id="expr_pass" typeRef="boolean"><text>pass_complete</text></inputExpression>
+      </input>
+      <input id="in_eye_done" label="eye_complete">
+        <inputExpression id="expr_eye" typeRef="boolean"><text>eye_complete</text></inputExpression>
+      </input>
+      <input id="in_need_listen" label="need_listen">
+        <inputExpression id="expr_listen" typeRef="boolean"><text>need_listen</text></inputExpression>
+      </input>
+      <input id="in_stt_match" label="stt_match">
+        <inputExpression id="expr_match" typeRef="boolean"><text>stt_match</text></inputExpression>
+      </input>
+      <input id="in_conf_ok" label="confidence_ok">
+        <inputExpression id="expr_conf" typeRef="boolean"><text>confidence_ok</text></inputExpression>
+      </input>
+      <output id="out_action" name="action" typeRef="string"/>
+      <output id="out_step" name="step_id" typeRef="string"/>
+
+      <!-- Cancel / abort -->
+      <rule id="r_abort">
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text>true</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"ABORT"</text></outputEntry>
+        <outputEntry><text>"abort"</text></outputEntry>
+      </rule>
+
+      <!-- All requested monocular passes done → show final results -->
+      <rule id="r_confirm">
+        <inputEntry><text>"measuring"</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text>true</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"SHOW_RESULTS"</text></outputEntry>
+        <outputEntry><text>"b10_results"</text></outputEntry>
+      </rule>
+
+      <!-- accepted → show queue / preparing -->
+      <rule id="r_queue">
+        <inputEntry><text>"accepted"</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"SHOW_QUEUE"</text></outputEntry>
+        <outputEntry><text>"queue_stub"</text></outputEntry>
+      </rule>
+
+      <!-- preparing / guiding: wait ready -->
+      <rule id="r_wait">
+        <inputEntry><text>"preparing", "guiding"</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"WAIT_READY"</text></outputEntry>
+        <outputEntry><text>"b3_stand"</text></outputEntry>
+      </rule>
+
+      <!-- ready → play cover instruction then show row -->
+      <rule id="r_guide_ready">
+        <inputEntry><text>"preparing", "guiding"</text></inputEntry>
+        <inputEntry><text>true</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"PLAY_AUDIO"</text></outputEntry>
+        <outputEntry><text>"b4_cover"</text></outputEntry>
+      </rule>
+
+      <!-- measuring: eye complete → switch -->
+      <rule id="r_switch">
+        <inputEntry><text>"measuring"</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text>true</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"SWITCH_EYE"</text></outputEntry>
+        <outputEntry><text>"switch_eye"</text></outputEntry>
+      </rule>
+
+      <!-- measuring: row complete → record -->
+      <rule id="r_record">
+        <inputEntry><text>"measuring"</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>true</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"RECORD"</text></outputEntry>
+        <outputEntry><text>"b9_record"</text></outputEntry>
+      </rule>
+
+      <!-- measuring: need listen -->
+      <rule id="r_listen">
+        <inputEntry><text>"measuring"</text></inputEntry>
+        <inputEntry><text>true</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>true</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"LISTEN"</text></outputEntry>
+        <outputEntry><text>"b7_stt"</text></outputEntry>
+      </rule>
+
+      <!-- measuring: show row when not listening -->
+      <rule id="r_show">
+        <inputEntry><text>"measuring"</text></inputEntry>
+        <inputEntry><text>true</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"SHOW_ROW"</text></outputEntry>
+        <outputEntry><text>"b5_show"</text></outputEntry>
+      </rule>
+
+      <!-- measuring but not ready → wait -->
+      <rule id="r_meas_wait">
+        <inputEntry><text>"measuring"</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"WAIT_READY"</text></outputEntry>
+        <outputEntry><text>"b3_stand"</text></outputEntry>
+      </rule>
+
+      <!-- final results displayed → submit -->
+      <rule id="r_submit">
+        <inputEntry><text>"results"</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"SUBMIT"</text></outputEntry>
+        <outputEntry><text>"submit"</text></outputEntry>
+      </rule>
+
+      <rule id="r_idle">
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <inputEntry><text></text></inputEntry>
+        <outputEntry><text>"IDLE"</text></outputEntry>
+        <outputEntry><text>"idle"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+
+</definitions>

@@ -1,0 +1,14 @@
+<Application x:Class="VisionAgent.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnExplicitShutdown"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <SolidColorBrush x:Key="WindowGray" Color="#FFF0F0F0" />
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="12,4" />
+            <Setter Property="MinHeight" Value="27" />
+            <Setter Property="Margin" Value="2" />
+        </Style>
+    </Application.Resources>
+</Application>

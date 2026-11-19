@@ -1,0 +1,165 @@
+# SmartEyes MVP — stand-zone + headphones readiness
+
+model:
+  weights: yolov8n.pt
+  conf_threshold: 0.45
+  iou_threshold: 0.5
+  person_class_id: 0
+  detect_every_n_frames: 2
+  imgsz: 640
+  # Lab default off; clinic_jetson.yaml / stand_zone.json enable for station
+  detect_in_zone: false
+
+pose:
+  min_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+  model_complexity: 1
+  bbox_expand_ratio: 0.1
+
+line:
+  # floor = white ceramic stand zone (MVP default)
+  # tape  = colored floor tape (optional at some facilities)
+  # fixed = use fixed_polygon only
+  mode: floor
+
+  # White / light ceramic tiles (low saturation, high brightness)
+  floor_hsv_low: [0, 0, 130]
+  floor_hsv_high: [179, 60, 255]
+  min_area: 2500
+  min_floor_area_ratio: 0.035
+  # Normalized search window [x0, y0, x1, y1] — corridor tiles in camera view
+  search_roi: [0.30, 0.48, 0.86, 1.0]
+  morph_kernel: 7
+  erode_iters: 1
+  dilate_iters: 2
+
+  # Fallback polygon if auto floor detect fails (tuned for ~130cm cam, corridor view)
+  # Order: near-left, near-right, far-right, far-left (normalized 0..1)
+  fixed_polygon:
+    - [0.34, 0.98]
+    - [0.88, 0.98]
+    - [0.74, 0.48]
+    - [0.40, 0.48]
+
+  # Optional tape mode settings
+  hsv_low: [18, 80, 80]
+  hsv_high: [45, 255, 255]
+  hsv_low2: [40, 60, 60]
+  hsv_high2: [90, 255, 255]
+  band_margin_px: 40
+  min_length_px: 80
+  bottom_roi_ratio: 0.58
+
+headphones:
+  # Local closed-set detector; no open-vocabulary/CLIP dependency.
+  backend: yolo
+  weights: weights/headphones_over_ear.pt
+  closed_set_weights: weights/headphones_over_ear.pt
+  class_names: [over_ear, headphones, headphone, headset]
+  prompts:
+    - headphones
+    - headset
+    - earphone
+    - over-ear headphones
+    - ear muffs
+    - noise cancelling headphones
+  conf_threshold: 0.30
+  imgsz: 640
+  detect_every_n_frames: 3
+  head_iou_min: 0.06
+  head_expand_ratio: 0.45
+  crop_to_head: true
+  full_frame_fallback: true
+  require_center_in_head: false
+  max_head_cover: 0.50
+  require_on_head: true
+  allow_single_ear: true
+  single_ear_conf_min: 0.20
+  ear_radius_px: 56
+  vertical_head_frac: 0.75
+  max_below_head_frac: 0.32
+  wrist_pad_px: 28
+  # FUTURE earbuds guided setup — see docs/FUTURE_EARBUDS.md (not wired)
+  # earbuds_setup: {enabled: false, hold_seconds: 0.7, require_both_sides: true}
+
+eye_cover:
+  enabled: true
+  detect_every_n_frames: 2
+  # Asian open lids often sit ~0.15–0.22 EAR
+  ear_closed_threshold: 0.14
+  cover_score_threshold: 0.60
+  partial_cover_threshold: 0.45
+  # Open if iris visible at pupil zone (darker than cheek)
+  open_iris_min: 0.24
+  asymmetry_min: 0.14
+  min_eye_px: 28
+  bbox_expand_ratio: 0.2
+  tracking_window: 5
+  tracking_min_votes: 3
+  tracking_ema_alpha: 0.35
+  tracking_face_grace: 2
+  # Opaque-occluder (paddle/hand) detection for clinic-distance eye cover.
+  occluder_enabled: true
+  occluder_cover_threshold: 0.40
+  occluder_partial_threshold: 0.22
+  occluder_region_ratio: 0.26
+  occluder_dark_rel: 0.55
+  occluder_ref_low: 40.0
+
+rules:
+  hold_seconds: 1.5
+  require_single_person: true
+  require_both_ankles: false
+
+video:
+  width: 1280
+  height: 720
+  fps: 30
+  # Selfie mirror so your left eye is on the left of the screen
+  mirror: true
+
+pipeline:
+  source: macbook
+  # Preferred webcam for --source macbook (first substring match wins).
+  # Continuity often shows as "{iPhone name} Camera" — on this machine that
+  # feed is the working MacBook / primary webcam (index may be 2).
+  macbook_match:
+    - "Kagami Rudo Camera"
+    - "FaceTime HD Camera"
+    - "FaceTime"
+    - "built-in"
+  output_dir: outputs
+  log_interval_frames: 15
+  max_smoke_frames: 60
+
+# Default: all checks on. CLI --eyes / --stand / --headphone overrides to only those.
+checks:
+  stand: true
+  headphones: true
+  eyes: true
+
+# Vietnamese Sloan letter spelling (opt-in via --spell)
+spell:
+  enabled: false
+  sloan_root: ../sloan_stt
+  board_len: 5
+  min_confidence: 0.55
+  min_margin: 0.05
+  energy_threshold: 0.008
+  silence_duration: 0.18
+  auto_start_on_ready: true
+  ready_delay_seconds: 0.35
+  # Tolerate brief READY / peek / eye-side flicker during spelling
+  lost_ready_grace_seconds: 0.7
+  peek_grace_seconds: 0.6
+  side_change_grace_seconds: 0.6
+  timeout_seconds: 60
+  soft_align: true
+  # Prefer laptop mic over headset / Continuity (e.g. WH-XB910N)
+  mic_match:
+    - MacBook Air Microphone
+    - MacBook Pro Microphone
+    - MacBook Microphone
+    - Built-in Microphone
+    - Internal Microphone
+  # mic_device: null   # or set an integer to force a sounddevice index

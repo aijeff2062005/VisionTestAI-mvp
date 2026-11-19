@@ -1,0 +1,172 @@
+# Frappe (ERPNext + healthcare + shared hospital core + site-specific apps).
+# Host :8000 → Frappe frontend (replaces FastAPI hospital_api).
+# Use with: docker compose -p visiontestai -f docker-compose.yml -f frappe/compose.yml ...
+#
+# One bench serves two isolated hospital sites, routed by hostname.
+# CUSTOM_IMAGE must include ERPNext, healthcare and all local hospital apps.
+
+x-frappe-image: &frappe_image
+  image: ${CUSTOM_IMAGE:-visiontestai/frappe:clinic}
+  pull_policy: never
+  restart: unless-stopped
+  volumes:
+    - visiontestai-frappe-sites:/home/frappe/frappe-bench/sites
+    - visiontestai-frappe-logs:/home/frappe/frappe-bench/logs
+
+services:
+  frappe-db:
+    image: mariadb:10.6
+    container_name: visiontestai-frappe-db
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MYSQL_ROOT_PASSWORD: ${FRAPPE_DB_ROOT_PASSWORD:-admin}
+      MARIADB_ROOT_PASSWORD: ${FRAPPE_DB_ROOT_PASSWORD:-admin}
+    volumes:
+      - visiontestai-frappe-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 20s
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    mem_limit: 1g
+    cpus: 1.0
+
+  frappe-redis-cache:
+    image: redis:6.2-alpine
+    container_name: visiontestai-frappe-redis-cache
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.25
+
+  frappe-redis-queue:
+    image: redis:6.2-alpine
+    container_name: visiontestai-frappe-redis-queue
+    restart: unless-stopped
+    volumes:
+      - visiontestai-frappe-redis-queue:/data
+    mem_limit: 256m
+    cpus: 0.25
+
+  frappe-configurator:
+    <<: *frappe_image
+    container_name: visiontestai-frappe-configurator
+    restart: "no"
+    entrypoint: ["bash", "-c"]
+    command:
+      - >
+        ls -1 apps > sites/apps.txt;
+        bench set-config -g db_host frappe-db;
+        bench set-config -gp db_port 3306;
+        bench set-config -g redis_cache "redis://frappe-redis-cache:6379";
+        bench set-config -g redis_queue "redis://frappe-redis-queue:6379";
+        bench set-config -g redis_socketio "redis://frappe-redis-queue:6379";
+        bench set-config -gp socketio_port 9000;
+    environment:
+      DB_HOST: frappe-db
+      DB_PORT: "3306"
+    depends_on:
+      frappe-db:
+        condition: service_healthy
+      frappe-redis-cache:
+        condition: service_started
+      frappe-redis-queue:
+        condition: service_started
+
+  frappe-create-site:
+    <<: *frappe_image
+    container_name: visiontestai-frappe-create-site
+    restart: "no"
+    entrypoint: ["/usr/local/bin/visiontestai-provision-sites"]
+    environment:
+      FRAPPE_ADMIN_PASSWORD: ${FRAPPE_ADMIN_PASSWORD:-admin}
+      FRAPPE_DB_ROOT_PASSWORD: ${FRAPPE_DB_ROOT_PASSWORD:-admin}
+      TRUNG_VUONG_SITE_HOST: ${TRUNG_VUONG_SITE_HOST:-trungvuong.vision.primetek.ai}
+      QUAN_Y_SITE_HOST: ${QUAN_Y_SITE_HOST:-qdymd.vision.primetek.ai}
+      MQTT_USERNAME: ${MQTT_USERNAME:-vision}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-mqtt-dev-pass}
+      STATION_ID: ${STATION_ID:-station-01}
+      TRUNG_VUONG_STATION_ID: ${TRUNG_VUONG_STATION_ID:-}
+      QUAN_Y_STATION_ID: ${QUAN_Y_STATION_ID:-}
+      MEDIA_TOKEN: ${MEDIA_TOKEN:-dev-media-token}
+      AIFACE_STATION_URL: ${AIFACE_STATION_URL:-}
+    depends_on:
+      frappe-configurator:
+        condition: service_completed_successfully
+      mqtt:
+        condition: service_started
+      media:
+        condition: service_started
+      qr_decode:
+        condition: service_started
+
+  frappe-backend:
+    <<: *frappe_image
+    container_name: visiontestai-frappe-backend
+    depends_on:
+      frappe-create-site:
+        condition: service_completed_successfully
+
+  frappe-websocket:
+    <<: *frappe_image
+    container_name: visiontestai-frappe-websocket
+    command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
+    environment:
+      FRAPPE_REDIS_CACHE: redis://frappe-redis-cache:6379
+      FRAPPE_REDIS_QUEUE: redis://frappe-redis-queue:6379
+    depends_on:
+      frappe-create-site:
+        condition: service_completed_successfully
+
+  frappe-queue-short:
+    <<: *frappe_image
+    container_name: visiontestai-frappe-queue-short
+    command: ["bench", "worker", "--queue", "short,default"]
+    depends_on:
+      frappe-create-site:
+        condition: service_completed_successfully
+
+  frappe-queue-long:
+    <<: *frappe_image
+    container_name: visiontestai-frappe-queue-long
+    command: ["bench", "worker", "--queue", "long,default,short"]
+    depends_on:
+      frappe-create-site:
+        condition: service_completed_successfully
+
+  frappe-scheduler:
+    <<: *frappe_image
+    container_name: visiontestai-frappe-scheduler
+    command: ["bench", "schedule"]
+    depends_on:
+      frappe-create-site:
+        condition: service_completed_successfully
+
+  frappe-frontend:
+    <<: *frappe_image
+    container_name: visiontestai-frappe-frontend
+    command: ["nginx-entrypoint.sh"]
+    environment:
+      BACKEND: frappe-backend:8000
+      FRAPPE_SITE_NAME_HEADER: ${FRAPPE_SITE_NAME_HEADER:-$$host}
+      SOCKETIO: frappe-websocket:9000
+      UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
+      UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
+      UPSTREAM_REAL_IP_RECURSIVE: "off"
+      PROXY_READ_TIMEOUT: "120"
+      CLIENT_MAX_BODY_SIZE: 50m
+    ports:
+      - "8000:8080"
+    depends_on:
+      - frappe-backend
+      - frappe-websocket
+
+volumes:
+  visiontestai-frappe-sites:
+  visiontestai-frappe-logs:
+  visiontestai-frappe-db:
+  visiontestai-frappe-redis-queue:

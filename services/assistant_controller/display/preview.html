@@ -1,0 +1,1960 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Căn chỉnh Camera · SmartEyes</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-main: #07090e;
+      --bg-header: #0e1118;
+      --bg-card: rgba(255, 255, 255, 0.06);
+      --bg-card-hover: rgba(255, 255, 255, 0.12);
+      --bg-control: rgba(255, 255, 255, 0.04);
+      --bg-active: rgba(255, 255, 255, 0.14);
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-glow: rgba(59, 130, 246, 0.35);
+      
+      --accent-yellow: #facc15;
+      --accent-yellow-glow: rgba(250, 204, 21, 0.4);
+      
+      --accent-cyan: #38bdf8;
+      --accent-cyan-glow: rgba(56, 189, 248, 0.4);
+      
+      --accent-orange: #fb923c;
+      
+      --btn-radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; border: none; outline: none; }
+
+    html, body {
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Borderless Header */
+    header {
+      height: 52px;
+      background: var(--bg-header);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-shrink: 0;
+      user-select: none;
+      z-index: 20;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app-title {
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app-title-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      background: rgba(59, 130, 246, 0.15);
+      padding: 2px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Borderless Segmented Switcher */
+    .tool-mode-group {
+      display: flex;
+      align-items: center;
+      background: var(--bg-control);
+      border-radius: calc(var(--btn-radius) + 2px);
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .tool-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 15px;
+      border-radius: var(--btn-radius);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      letter-spacing: -0.01em;
+    }
+
+    .tool-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .tool-btn.active {
+      background: var(--bg-active);
+      color: #ffffff;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .tool-btn .indicator-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 2px;
+      transition: transform 0.2s ease;
+    }
+    .tool-btn.active .indicator-dot {
+      transform: scale(1.25);
+    }
+
+    .tool-btn[data-tool="box"] .indicator-dot,
+    .tool-btn[data-tool="hull"] .indicator-dot {
+      background: var(--accent-yellow);
+      box-shadow: 0 0 8px var(--accent-yellow-glow);
+    }
+
+    .tool-btn[data-tool="track"] .indicator-dot {
+      background: var(--accent-cyan);
+      box-shadow: 0 0 8px var(--accent-cyan-glow);
+    }
+
+    /* Borderless Action Button Group */
+    .action-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 35px;
+      padding: 0 15px;
+      border-radius: var(--btn-radius);
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--bg-card);
+      color: var(--text-main);
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+      user-select: none;
+      letter-spacing: -0.01em;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--bg-card-hover);
+      color: #ffffff;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Primary Save Button */
+    .btn.btn-save {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #ffffff;
+      box-shadow: 0 2px 12px var(--primary-glow);
+    }
+
+    .btn.btn-save:hover:not(:disabled) {
+      background: linear-gradient(135deg, #60a5fa, #2563eb);
+      box-shadow: 0 4px 16px var(--primary-glow);
+    }
+
+    /* Camera Toggle Button */
+    .btn.btn-cam {
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    .btn.btn-cam.on {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+
+    .btn.btn-cam.on:hover {
+      background: rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+    }
+
+    /* Auto Floor (HSV) Toggle Button */
+    .btn.btn-legacy.on {
+      background: rgba(234, 179, 8, 0.16);
+      color: #facc15;
+      border-color: rgba(234, 179, 8, 0.4);
+    }
+
+    .btn.btn-legacy.on:hover {
+      background: rgba(234, 179, 8, 0.26);
+      color: #fde047;
+    }
+
+    /* Main Camera Stage */
+    main {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      background: var(--bg-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .video-wrapper {
+      position: relative;
+      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.95);
+      background: #020408;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .video-wrapper img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      user-select: none;
+    }
+
+    .video-wrapper img.off {
+      display: none;
+    }
+
+    .video-wrapper canvas {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+      cursor: crosshair;
+    }
+
+    .video-container.idle canvas {
+      pointer-events: none;
+      cursor: default;
+    }
+
+    /* Off State Screen */
+    .off-screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: #0e1118;
+      border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+      max-width: 480px;
+      max-height: 300px;
+      margin: auto;
+      padding: 32px;
+      text-align: center;
+      z-index: 10;
+    }
+
+    .off-screen.hidden {
+      display: none;
+    }
+
+    .off-screen-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+    }
+
+    .off-screen h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+    }
+
+    .off-screen p {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    /* Borderless Studio Footer */
+    footer {
+      height: 36px;
+      background: var(--bg-header);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-shrink: 0;
+      font-size: 12px;
+      color: var(--text-muted);
+      user-select: none;
+      z-index: 20;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .footer-center {
+      color: #ffffff;
+      font-weight: 700;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+    }
+
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .legend-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .legend-tag .color-box {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+    .legend-tag.stand .color-box { background: var(--accent-yellow); box-shadow: 0 0 6px var(--accent-yellow-glow); }
+    .legend-tag.track .color-box { background: var(--accent-cyan); box-shadow: 0 0 6px var(--accent-cyan-glow); }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 48px;
+      right: 20px;
+      background: #181d28;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: var(--btn-radius);
+      font-size: 12.5px;
+      font-weight: 700;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1050;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(4, 7, 14, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Modal Card */
+    .modal-card {
+      background: #0d111a;
+      width: 680px;
+      max-width: 95vw;
+      max-height: 90vh;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.95);
+      transform: scale(0.96) translateY(12px);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .modal-backdrop.open .modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    /* Modal Header */
+    .modal-header {
+      padding: 16px 20px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      flex-shrink: 0;
+    }
+    .modal-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-weight: 800;
+      font-size: 15px;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+    .modal-subtitle {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-top: 1px;
+    }
+    .btn-modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .btn-modal-close:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    /* Modal Body */
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .modal-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .modal-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+    }
+    .modal-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    /* Form Layout */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group.span-2 {
+      grid-column: span 2;
+    }
+    .instruction-images { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .instruction-image-card { padding: 10px; border: 1px solid #4b5563; border-radius: 10px; }
+    .instruction-image-card img { display: block; width: 100%; height: 105px; object-fit: contain; background: #fff; border-radius: 6px; margin: 8px 0; }
+    .instruction-image-card input { width: 100%; color: #fff; font-size: 11px; }
+    .instruction-image-card button { margin-top: 8px; }
+    @media (max-width: 600px) { .instruction-images { grid-template-columns: 1fr; } }
+    .form-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-weight: 700;
+      font-size: 12.5px;
+      color: #f1f5f9;
+      user-select: none;
+    }
+    .label-hint {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+    }
+
+    /* Form Controls */
+    .form-select, .form-input {
+      width: 100%;
+      height: 38px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 0 12px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      border: none;
+      outline: none;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .form-select option {
+      background: #111520;
+      color: #ffffff;
+    }
+    .form-select:focus, .form-input:focus {
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.45);
+    }
+
+    .input-with-unit {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-with-unit .form-input {
+      padding-right: 52px;
+    }
+    .unit-badge {
+      position: absolute;
+      right: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .connection-card {
+      background: rgba(255, 255, 255, 0.025);
+      border-radius: 10px;
+      padding: 13px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .connection-title {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .connection-hint {
+      margin-top: 2px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+    .endpoint-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 110px;
+      gap: 8px;
+    }
+    .connection-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 35px;
+    }
+    .connection-status {
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+    .connection-status.ok { color: #4ade80; }
+    .connection-status.error { color: #f87171; }
+    .detected-address {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .detected-address button {
+      background: transparent;
+      color: #60a5fa;
+      font: inherit;
+      cursor: pointer;
+    }
+    .display-metrics {
+      padding: 9px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.035);
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+    .endpoint-summary {
+      display: grid;
+      gap: 5px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.035);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+    .endpoint-summary strong { color: #dbeafe; }
+
+    /* Slider Group */
+    .slider-group {
+      background: rgba(255, 255, 255, 0.02);
+      padding: 12px 14px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .slider-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .value-badge {
+      font-family: inherit;
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      font-size: 12px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      padding: 3px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+    }
+    .form-range {
+      width: 100%;
+      height: 5px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    .form-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: #3b82f6;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+    .form-range::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Modal Footer */
+    .modal-footer {
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      flex-shrink: 0;
+    }
+    .footer-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="brand-section">
+      <span class="app-title">Căn chỉnh Camera</span>
+      <span class="app-title-tag">SmartEyes</span>
+    </div>
+
+    <!-- Center Mode Switcher -->
+    <div class="tool-mode-group">
+      <button type="button" class="tool-btn active" data-tool="box">
+        <span class="indicator-dot"></span>Hộp đứng
+      </button>
+      <button type="button" class="tool-btn" data-tool="hull">
+        <span class="indicator-dot"></span>Đa giác đứng
+      </button>
+      <button type="button" class="tool-btn" data-tool="track">
+        <span class="indicator-dot"></span>Vùng quét AI
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-group">
+      <button type="button" class="btn btn-save" id="btnSave" disabled>Lưu vùng</button>
+      <button type="button" class="btn" id="btnClear" style="display: none;">Hủy vẽ</button>
+      <button type="button" class="btn btn-legacy" id="btnLegacy" title="Tự động nhận diện sàn gạch trắng bằng màu sắc HSV">Dò sàn tự động</button>
+      <button type="button" class="btn btn-cam" id="btnToggleCam">Bật camera</button>
+      <button type="button" class="btn" id="btnSettings" title="Cài đặt hệ thống & pipeline">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Cài đặt
+      </button>
+    </div>
+  </header>
+
+  <!-- Viewport -->
+  <main>
+    <div class="video-container idle" id="videoContainer">
+      <div class="video-wrapper" id="videoWrapper">
+        <img id="feed" class="off" alt="Camera Feed" />
+        <canvas id="overlay"></canvas>
+      </div>
+
+      <!-- Off State Card -->
+      <div class="off-screen" id="offScreen">
+        <div class="off-screen-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+        </div>
+        <h3>Camera Preview đang tắt</h3>
+        <p>Hệ thống tạm dừng hiển thị camera để giải phóng tài nguyên CPU cho tác vụ đo thị lực.</p>
+        <button type="button" class="btn btn-save" id="btnStartBig" style="margin-top: 4px; padding: 0 20px;">
+          Bật Camera Preview
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Studio Footer -->
+  <footer>
+    <div class="footer-left" id="hintText">Kéo chuột để vẽ hình chữ nhật vùng đứng.</div>
+    <div class="footer-center" id="coachText">Camera đang tắt.</div>
+    <div class="footer-right">
+      <span class="legend-tag stand"><span class="color-box"></span>Vùng đứng</span>
+      <span class="legend-tag track"><span class="color-box"></span>Vùng quét (Track)</span>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Pipeline Settings Modal -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-card">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="modal-title">Cấu hình Pipeline Thị lực</div>
+            <div class="modal-subtitle">Tự động cập nhật hệ thống ngay sau khi lưu</div>
+          </div>
+        </div>
+        <button type="button" class="btn-modal-close" id="btnCloseSettingsModal" title="Đóng">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <!-- 1. Camera -->
+        <div class="form-group">
+          <label class="form-label" for="settingCameraSource">
+            <span>Camera</span>
+            <span class="label-hint">Nguồn ghi hình bệnh nhân & căn chỉnh tư thế</span>
+          </label>
+          <select class="form-select" id="settingCameraSource"></select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="settingInputMode">
+            <span>Cách nhập ký tự</span>
+            <span class="label-hint">Chế độ mặc định nếu bệnh nhân không chọn trên tablet; áp dụng sau khi dịch vụ tự khởi động lại</span>
+          </label>
+          <select class="form-select" id="settingInputMode">
+            <option value="speak">Nói qua micro (speak)</option>
+            <option value="tablet">Chọn trên tablet (tablet)</option>
+          </select>
+        </div>
+
+        <!-- 2. Micro & 3. Loa -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="settingInputDevice">
+              <span>Micro</span>
+              <span class="label-hint">Thu âm giọng đọc chữ cái</span>
+            </label>
+            <select class="form-select" id="settingInputDevice"></select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="settingOutputDevice">
+              <span>Loa</span>
+              <span class="label-hint">Phát âm hướng dẫn bệnh nhân</span>
+            </label>
+            <select class="form-select" id="settingOutputDevice"></select>
+          </div>
+        </div>
+
+        <!-- 4. Giọng đọc trợ lý & 5. Khoảng cách -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="settingVoiceGender">
+              <span>Giọng đọc trợ lý</span>
+              <span class="label-hint">Giọng AI hướng dẫn quy trình</span>
+            </label>
+            <select class="form-select" id="settingVoiceGender">
+              <option value="auto">Tự động (Đối ngược giới tính)</option>
+              <option value="female">Giọng Nữ</option>
+              <option value="male">Giọng Nam</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="settingDistanceM">
+              <span>Khoảng cách</span>
+              <span class="label-hint">Khoảng cách vạch đứng (mặc định 5m)</span>
+            </label>
+            <div class="input-with-unit">
+              <input type="number" class="form-input" id="settingDistanceM" min="1.0" max="10.0" step="0.1" value="5.0" />
+              <span class="unit-badge">mét</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- VPS Coder / Frappe -->
+        <div class="connection-card">
+          <div>
+            <div class="connection-title">VPS Coder / Smart Hospital</div>
+            <div class="connection-hint">Hostname MQTT và các URL HTTPS public cho các dịch vụ VPS.</div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="settingVpsIp">
+                <span>Máy chủ MQTT</span>
+                <span class="label-hint">Hostname hoặc IPv4 của MQTT</span>
+              </label>
+              <div class="endpoint-grid">
+                <input type="text" class="form-input" id="settingVpsIp" placeholder="vision-k8s-mqtt.primetek.ai" />
+                <input type="number" class="form-input" id="settingVpsMqttPort" min="1" max="65535" placeholder="1883" title="Cổng MQTT" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="settingFrappeUrl">
+                <span>URL Frappe</span>
+                <span class="label-hint">URL public HTTPS của Smart Hospital</span>
+              </label>
+              <input type="url" class="form-input" id="settingFrappeUrl" placeholder="https://example.ts.net" />
+            </div>
+          </div>
+          <div class="endpoint-summary" id="vpsEndpointSummary">
+            <div><strong>Frappe:</strong> —</div>
+            <div><strong>MQTT:</strong> —</div>
+            <div><strong>Media:</strong> —</div>
+            <div><strong>Face VectorDB:</strong> —</div>
+          </div>
+          <div class="connection-actions">
+            <button type="button" class="btn" id="btnTestVpsConnection">Kiểm tra VPS</button>
+            <span class="connection-status" id="vpsConnectionStatus">Chưa kiểm tra</span>
+          </div>
+        </div>
+
+        <!-- Kết nối Jetson ↔ Face ID -->
+        <div class="connection-card">
+          <div>
+            <div class="connection-title">Kết nối Jetson ↔ Face ID</div>
+            <div class="connection-hint">Hai thiết bị phải cùng mạng. Khi lưu, Jetson cập nhật cả API gọi đến Face ID và địa chỉ Face ID gửi sự kiện nhận diện về.</div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="settingJetsonFaceIp">
+                <span>Jetson nhận sự kiện</span>
+                <span class="label-hint">IP của Jetson trên mạng nối với Face ID</span>
+              </label>
+              <div class="endpoint-grid">
+                <input type="text" class="form-input" id="settingJetsonFaceIp" inputmode="decimal" placeholder="192.168.1.125" />
+                <input type="number" class="form-input" id="settingJetsonFacePort" min="1" max="65535" placeholder="7788" title="Cổng nhận sự kiện" />
+              </div>
+              <div class="detected-address" id="jetsonDetectedRow">
+                IP đang hoạt động: <span id="jetsonDetectedIp">—</span>
+                <button type="button" id="btnUseDetectedJetsonIp">Dùng IP này</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="settingFaceDeviceIp">
+                <span>Thiết bị Face ID</span>
+                <span class="label-hint">IP và cổng HTTP API của Face ID</span>
+              </label>
+              <div class="endpoint-grid">
+                <input type="text" class="form-input" id="settingFaceDeviceIp" inputmode="decimal" placeholder="192.168.1.18" />
+                <input type="number" class="form-input" id="settingFaceDevicePort" min="1" max="65535" placeholder="80" title="Cổng API" />
+              </div>
+            </div>
+          </div>
+          <div class="endpoint-summary">
+            <div><strong>Jetson LAN:</strong> <span id="jetsonLanUrl">—</span></div>
+            <div><strong>Jetson Tailscale:</strong> <span id="jetsonTailnetIp">—</span></div>
+            <div><strong>Jetson public:</strong> <span id="jetsonPublicUrl">—</span></div>
+            <div><strong>Face ID API:</strong> <span id="faceDeviceUrl">—</span></div>
+          </div>
+          <div class="connection-actions">
+            <button type="button" class="btn" id="btnTestFaceConnection">Kiểm tra kết nối</button>
+            <span class="connection-status" id="faceConnectionStatus">Chưa kiểm tra</span>
+          </div>
+        </div>
+
+        <!-- Hiệu chuẩn kích thước vật lý của chart -->
+        <div class="connection-card">
+          <div>
+            <div class="connection-title">Hiệu chuẩn màn hình kiểm tra</div>
+            <div class="connection-hint">Tự động tính theo đường chéo đã nhập và độ phân giải chart trên Jetson; không lấy thông số từ tablet hoặc trình duyệt từ xa.</div>
+          </div>
+          <div class="display-metrics" id="displayMetricsText">Chưa nhận thông tin từ màn hình bệnh nhân.</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="settingDisplayPreset">
+                <span>Kích thước màn hình</span>
+                <span class="label-hint">Nhập đường chéo thực tế; Jetson tự tính theo độ phân giải màn hình đo</span>
+              </label>
+              <div class="endpoint-grid">
+                <select class="form-select" id="settingDisplayPreset">
+                  <option value="27">27 inch</option>
+                  <option value="32">32 inch</option>
+                  <option value="40">40 inch</option>
+                  <option value="43">43 inch</option>
+                  <option value="55">55 inch</option>
+                  <option value="custom">Tùy chỉnh</option>
+                </select>
+                <input type="number" class="form-input" id="settingDisplayDiagonal" min="5" max="150" step="0.1" title="Đường chéo inch" />
+              </div>
+            </div>
+          </div>
+          <div class="connection-status" id="displayCalibrationStatus">Đang chờ thông số màn hình chart trên Jetson.</div>
+        </div>
+
+        <!-- Thời gian trả lời theo nguồn nhập -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <label class="form-label" for="settingLetterChunk">
+              <span>Thời gian đọc bằng giọng nói</span>
+              <span class="label-hint">Mỗi ký tự khi dùng micro (mặc định 3 giây)</span>
+            </label>
+            <span class="value-badge" id="valLetterChunk">3.0 s</span>
+          </div>
+          <input type="range" class="form-range" id="settingLetterChunk" min="1.0" max="30.0" step="0.5" value="3.0" />
+        </div>
+        <div class="slider-group">
+          <div class="slider-header">
+            <label class="form-label" for="settingTabletChunk">
+              <span>Thời gian chọn trên tablet</span>
+              <span class="label-hint">Mỗi ký tự khi chạm và xác nhận (mặc định 10 giây)</span>
+            </label>
+            <span class="value-badge" id="valTabletChunk">10.0 s</span>
+          </div>
+          <input type="range" class="form-range" id="settingTabletChunk" min="1.0" max="30.0" step="0.5" value="10.0" />
+        </div>
+
+        <!-- 6. Model A confidence band -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <label class="form-label" for="settingUncertainThreshold">
+              <span>Ngưỡng bù ký tự</span>
+              <span class="label-hint">Dưới ngưỡng này tính sai; từ ngưỡng này đến ngưỡng đúng thì bù một lần</span>
+            </label>
+            <span class="value-badge" id="valUncertainThreshold">0.45</span>
+          </div>
+          <input type="range" class="form-range" id="settingUncertainThreshold" min="0.20" max="0.80" step="0.01" value="0.45" />
+        </div>
+
+        <!-- 7. Model A accept threshold -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <label class="form-label" for="settingAcceptThreshold">
+              <span>Ngưỡng ghi nhận đúng</span>
+              <span class="label-hint">Chỉ chấm đúng khi confidence lớn hơn ngưỡng và nhãn trùng ký tự đang hiển thị</span>
+            </label>
+            <span class="value-badge" id="valAcceptThreshold">0.75</span>
+          </div>
+          <input type="range" class="form-range" id="settingAcceptThreshold" min="0.40" max="0.95" step="0.01" value="0.75" />
+        </div>
+
+        <div class="form-row two-col">
+          <div class="form-group">
+            <label class="form-label" for="settingMaxReplacements">
+              <span>Số lần bù tối đa</span>
+              <span class="label-hint">Tối đa 1 lần cho mỗi vị trí</span>
+            </label>
+            <input type="number" class="form-input" id="settingMaxReplacements" min="0" max="1" step="1" value="1" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="settingLeftStartEasier">
+              <span>Mắt trái bắt đầu dễ hơn</span>
+              <span class="label-hint">Số level dễ hơn so với kết quả mắt phải</span>
+            </label>
+            <input type="number" class="form-input" id="settingLeftStartEasier" min="0" max="3" step="1" value="1" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ảnh hướng dẫn trên màn hình đo
+            <span class="label-hint">Chọn JPEG, PNG hoặc WebP (tối đa 10 MB), rồi bấm Lưu &amp; Áp dụng. Ảnh gốc luôn có thể khôi phục.</span>
+          </label>
+          <div class="instruction-images" id="instructionImageSettings"></div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn" id="btnResetSettings" title="Tải lại giá trị đang lưu trong hệ thống">
+          Khôi phục
+        </button>
+        <div class="footer-actions-right">
+          <button type="button" class="btn" id="btnCancelSettings">Hủy</button>
+          <button type="button" class="btn btn-save" id="btnApplySettings">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Lưu & Áp dụng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const feed = document.getElementById("feed");
+    const canvas = document.getElementById("overlay");
+    const ctx = canvas.getContext("2d");
+    const videoContainer = document.getElementById("videoContainer");
+    const videoWrapper = document.getElementById("videoWrapper");
+    const offScreen = document.getElementById("offScreen");
+    const btnToggleCam = document.getElementById("btnToggleCam");
+    const btnStartBig = document.getElementById("btnStartBig");
+    const btnSave = document.getElementById("btnSave");
+    const btnClear = document.getElementById("btnClear");
+    const btnLegacy = document.getElementById("btnLegacy");
+    const hintText = document.getElementById("hintText");
+    const coachText = document.getElementById("coachText");
+    const toast = document.getElementById("toast");
+    const toolBtns = document.querySelectorAll(".tool-btn");
+
+    let previewOn = false;
+    let busy = false;
+    let tool = "box";
+    let savedPoly = [];
+    let savedTrack = null;
+    let draftPts = [];
+    let boxStart = null;
+    let boxCurrent = null;
+    let dragging = false;
+    let zoneMeta = { mode: "fixed", detect_in_zone: true, legacy: false };
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2500);
+    }
+
+    function setFeed(on) {
+      if (on) {
+        feed.classList.remove("off");
+        feed.src = "/api/camera/stream.mjpg?t=" + Date.now();
+        videoContainer.classList.remove("idle");
+        offScreen.classList.add("hidden");
+        btnToggleCam.classList.add("on");
+        btnToggleCam.textContent = "Tắt camera";
+      } else {
+        feed.removeAttribute("src");
+        feed.classList.add("off");
+        videoContainer.classList.add("idle");
+        offScreen.classList.remove("hidden");
+        btnToggleCam.classList.remove("on");
+        btnToggleCam.textContent = "Bật camera";
+        coachText.textContent = "Camera đang tắt.";
+      }
+      resizeWrapper();
+    }
+
+    function setTool(next) {
+      tool = next;
+      toolBtns.forEach(b => b.classList.toggle("active", b.dataset.tool === tool));
+      draftPts = [];
+      boxStart = null;
+      boxCurrent = null;
+      dragging = false;
+
+      if (tool === "box") {
+        hintText.textContent = "Kéo chuột vẽ hình chữ nhật vùng đứng của bệnh nhân.";
+      } else if (tool === "hull") {
+        hintText.textContent = "Click 3 đến 8 điểm trên sàn để tạo đa giác vùng đứng.";
+      } else {
+        hintText.textContent = "Kéo chuột chọn khung quét YOLO (Track Box).";
+      }
+      updateSaveState();
+      drawOverlay();
+    }
+
+    function updateSaveState() {
+      let hasDraft = false;
+      if (tool === "hull") hasDraft = draftPts.length >= 3;
+      else hasDraft = !!(boxStart && boxCurrent && draftBoxPoly());
+
+      btnSave.disabled = !hasDraft || busy;
+      btnClear.style.display = (hasDraft || draftPts.length > 0 || boxStart) ? "inline-flex" : "none";
+    }
+
+    function resizeWrapper() {
+      const rect = videoContainer.getBoundingClientRect();
+      const nw = feed.naturalWidth || 640;
+      const nh = feed.naturalHeight || 480;
+      if (!rect.width || !rect.height) return;
+
+      const containerAspect = rect.width / rect.height;
+      const imageAspect = nw / nh;
+
+      let w, h;
+      if (containerAspect > imageAspect) {
+        h = rect.height;
+        w = h * imageAspect;
+      } else {
+        w = rect.width;
+        h = w / imageAspect;
+      }
+
+      const rw = Math.round(w);
+      const rh = Math.round(h);
+      videoWrapper.style.width = rw + "px";
+      videoWrapper.style.height = rh + "px";
+
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rw * dpr);
+      canvas.height = Math.round(rh * dpr);
+      canvas.style.width = rw + "px";
+      canvas.style.height = rh + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      drawOverlay();
+    }
+
+    function eventToNorm(ev) {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width < 2 || rect.height < 2) return null;
+      const x = (ev.clientX - rect.left) / rect.width;
+      const y = (ev.clientY - rect.top) / rect.height;
+      if (x < 0 || y < 0 || x > 1 || y > 1) return null;
+      return [x, y];
+    }
+
+    function polyToScreen(poly) {
+      const rect = canvas.getBoundingClientRect();
+      return (poly || []).map(([x, y]) => [x * rect.width, y * rect.height]);
+    }
+
+    function boxToPoly(box) {
+      if (!box || box.length < 4) return null;
+      const [x0, y0, x1, y1] = box;
+      return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+    }
+
+    function drawPoly(points, stroke, fill, isDashed) {
+      if (!points || points.length < 2) return;
+      const pts = polyToScreen(points);
+      ctx.save();
+      if (isDashed) ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.closePath();
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+
+      pts.forEach(([x, y]) => {
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = stroke;
+        ctx.fill();
+      });
+    }
+
+    function draftBoxPoly() {
+      if (!boxStart || !boxCurrent) return null;
+      const [x0, y0] = boxStart;
+      const [x1, y1] = boxCurrent;
+      const left = Math.min(x0, x1);
+      const right = Math.max(x0, x1);
+      const top = Math.min(y0, y1);
+      const bottom = Math.max(y0, y1);
+      if (right - left < 0.01 || bottom - top < 0.01) return null;
+      return [[left, top], [right, top], [right, bottom], [left, bottom]];
+    }
+
+    function draftBoxNorm() {
+      const poly = draftBoxPoly();
+      if (!poly) return null;
+      return [poly[0][0], poly[0][1], poly[2][0], poly[2][1]];
+    }
+
+    function drawOverlay() {
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+
+      if (savedPoly && savedPoly.length >= 3) {
+        drawPoly(savedPoly, "#facc15", "rgba(250, 204, 21, 0.15)", false);
+      }
+      const trackPoly = boxToPoly(savedTrack);
+      if (trackPoly) {
+        drawPoly(trackPoly, "#38bdf8", "rgba(56, 189, 248, 0.12)", false);
+      }
+
+      if (tool === "hull") {
+        if (draftPts.length) {
+          drawPoly(draftPts, "#fb923c", draftPts.length >= 3 ? "rgba(251, 146, 60, 0.22)" : null, true);
+        }
+      } else {
+        const draft = draftBoxPoly();
+        if (draft) {
+          const isTrack = tool === "track";
+          drawPoly(draft, isTrack ? "#38bdf8" : "#fb923c", isTrack ? "rgba(56, 189, 248, 0.22)" : "rgba(251, 146, 60, 0.22)", true);
+        }
+      }
+    }
+
+    async function setPreview(enabled) {
+      if (busy) return;
+      busy = true;
+      try {
+        const r = await fetch("/api/camera/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: !!enabled }),
+        });
+        const d = await r.json();
+        if (!r.ok || d.ok === false) throw new Error(d.error || ("HTTP " + r.status));
+        previewOn = !!d.preview_enabled;
+        setFeed(previewOn);
+        showToast(previewOn ? "Đã bật camera" : "Đã tắt camera");
+        await tick();
+        await loadZone();
+      } catch (err) {
+        showToast("Lỗi: " + (err && err.message ? err.message : err));
+      } finally {
+        busy = false;
+        updateSaveState();
+      }
+    }
+
+    function applyZoneResponse(d) {
+      zoneMeta = d;
+      savedPoly = Array.isArray(d.polygon) ? d.polygon : [];
+      const tb = Array.isArray(d.track_box) ? d.track_box : (Array.isArray(d.detect_box) ? d.detect_box : null);
+      savedTrack = (tb && tb.length >= 4) ? tb.slice(0, 4) : null;
+      if (d.legacy) {
+        btnLegacy.classList.add("on");
+        btnLegacy.textContent = "Tắt dò sàn";
+        btnLegacy.title = "Đang bật dò sàn tự động (HSV). Bấm vào đây để tắt.";
+      } else {
+        btnLegacy.classList.remove("on");
+        btnLegacy.textContent = "Dò sàn tự động";
+        btnLegacy.title = "Tự động nhận diện sàn gạch trắng bằng màu sắc HSV";
+      }
+      drawOverlay();
+    }
+
+    async function loadZone() {
+      try {
+        const r = await fetch("/api/stand-zone", { cache: "no-store" });
+        const d = await r.json();
+        if (r.ok && d.ok !== false) applyZoneResponse(d);
+      } catch (_) {}
+    }
+
+    async function saveZone(payload) {
+      if (busy) return;
+      busy = true;
+      updateSaveState();
+      try {
+        const wasLegacy = !!(zoneMeta && zoneMeta.legacy);
+        const r = await fetch("/api/stand-zone", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const d = await r.json();
+        if (!r.ok || d.ok === false) throw new Error(d.error || ("HTTP " + r.status));
+        applyZoneResponse(d);
+        draftPts = [];
+        boxStart = null;
+        boxCurrent = null;
+        let msg = "Đã lưu vùng đứng";
+        if (payload.tool === "track") msg = "Đã lưu vùng quét AI";
+        else if (payload.legacy) msg = "Đã bật dò sàn tự động";
+        else if (wasLegacy && !payload.legacy) msg = "Đã tắt dò sàn tự động";
+        showToast(msg);
+      } catch (err) {
+        showToast("Lưu thất bại: " + (err && err.message ? err.message : err));
+      } finally {
+        busy = false;
+        updateSaveState();
+      }
+    }
+
+    async function tick() {
+      try {
+        const r = await fetch("/api/camera/status", { cache: "no-store" });
+        const d = await r.json();
+        if (typeof d.preview_enabled === "boolean" && d.preview_enabled !== previewOn) {
+          previewOn = d.preview_enabled;
+          setFeed(previewOn);
+        }
+        if (previewOn) {
+          coachText.textContent = d.coaching_vi || d.error || "Đang giám sát camera";
+        }
+      } catch (_) {}
+    }
+
+    // Canvas Pointer Events
+    canvas.addEventListener("pointerdown", (ev) => {
+      if (!previewOn || busy) return;
+      const pt = eventToNorm(ev);
+      if (!pt) return;
+      if (tool === "hull") {
+        draftPts.push(pt);
+        if (draftPts.length > 8) draftPts = draftPts.slice(-8);
+      } else {
+        dragging = true;
+        boxStart = pt;
+        boxCurrent = pt;
+        canvas.setPointerCapture(ev.pointerId);
+      }
+      updateSaveState();
+      drawOverlay();
+    });
+
+    canvas.addEventListener("pointermove", (ev) => {
+      if (!dragging || tool === "hull") return;
+      const pt = eventToNorm(ev);
+      if (!pt) return;
+      boxCurrent = pt;
+      updateSaveState();
+      drawOverlay();
+    });
+
+    function endBoxDrag(ev) {
+      if (!dragging) return;
+      dragging = false;
+      try { canvas.releasePointerCapture(ev.pointerId); } catch (_) {}
+      updateSaveState();
+      drawOverlay();
+    }
+    canvas.addEventListener("pointerup", endBoxDrag);
+    canvas.addEventListener("pointercancel", endBoxDrag);
+
+    // Button Events
+    btnSave.addEventListener("click", () => {
+      if (tool === "track") {
+        const track_box = draftBoxNorm();
+        if (!track_box) return;
+        saveZone({ tool: "track", track_box, mode: "fixed", detect_in_zone: true, legacy: false });
+        return;
+      }
+      let points = (tool === "box") ? draftBoxPoly() : draftPts.slice();
+      if (!points || points.length < 3) return;
+      saveZone({ points, tool, mode: "fixed", detect_in_zone: true, legacy: false });
+    });
+
+    btnClear.addEventListener("click", () => {
+      draftPts = [];
+      boxStart = null;
+      boxCurrent = null;
+      dragging = false;
+      updateSaveState();
+      drawOverlay();
+    });
+
+    btnLegacy.addEventListener("click", () => {
+      const isLegacy = !!(zoneMeta && zoneMeta.legacy);
+      if (isLegacy) {
+        if (!window.confirm("Tắt chế độ tự động nhận diện sàn gạch trắng (HSV) và quay lại vùng đứng cố định?")) return;
+        saveZone({ legacy: false, mode: "fixed", tool: "box", detect_in_zone: true, points: (savedPoly && savedPoly.length >= 3) ? savedPoly : undefined });
+      } else {
+        if (!window.confirm("Bật chế độ tự động nhận diện sàn gạch trắng (HSV)?")) return;
+        saveZone({ legacy: true, tool: "legacy" });
+      }
+    });
+
+    toolBtns.forEach(b => b.addEventListener("click", () => setTool(b.dataset.tool)));
+    btnToggleCam.addEventListener("click", () => setPreview(!previewOn));
+    btnStartBig.addEventListener("click", () => setPreview(true));
+
+    // Pipeline Settings Modal Logic (7 Essential Controls)
+    const btnSettings = document.getElementById("btnSettings");
+    const settingsModal = document.getElementById("settingsModal");
+    const btnCloseSettingsModal = document.getElementById("btnCloseSettingsModal");
+    const btnCancelSettings = document.getElementById("btnCancelSettings");
+    const btnApplySettings = document.getElementById("btnApplySettings");
+    const btnResetSettings = document.getElementById("btnResetSettings");
+
+    const settingCameraSource = document.getElementById("settingCameraSource");
+    const settingInputDevice = document.getElementById("settingInputDevice");
+    const settingOutputDevice = document.getElementById("settingOutputDevice");
+    const settingInputMode = document.getElementById("settingInputMode");
+    const settingVoiceGender = document.getElementById("settingVoiceGender");
+    const settingDistanceM = document.getElementById("settingDistanceM");
+    const settingLetterChunk = document.getElementById("settingLetterChunk");
+    const valLetterChunk = document.getElementById("valLetterChunk");
+    const settingTabletChunk = document.getElementById("settingTabletChunk");
+    const valTabletChunk = document.getElementById("valTabletChunk");
+    const settingUncertainThreshold = document.getElementById("settingUncertainThreshold");
+    const valUncertainThreshold = document.getElementById("valUncertainThreshold");
+    const settingAcceptThreshold = document.getElementById("settingAcceptThreshold");
+    const valAcceptThreshold = document.getElementById("valAcceptThreshold");
+    const settingMaxReplacements = document.getElementById("settingMaxReplacements");
+    const settingLeftStartEasier = document.getElementById("settingLeftStartEasier");
+    const settingVpsIp = document.getElementById("settingVpsIp");
+    const settingVpsMqttPort = document.getElementById("settingVpsMqttPort");
+    const settingFrappeUrl = document.getElementById("settingFrappeUrl");
+    const btnTestVpsConnection = document.getElementById("btnTestVpsConnection");
+    const vpsConnectionStatus = document.getElementById("vpsConnectionStatus");
+    const vpsEndpointSummary = document.getElementById("vpsEndpointSummary");
+    const settingJetsonFaceIp = document.getElementById("settingJetsonFaceIp");
+    const settingJetsonFacePort = document.getElementById("settingJetsonFacePort");
+    const settingFaceDeviceIp = document.getElementById("settingFaceDeviceIp");
+    const settingFaceDevicePort = document.getElementById("settingFaceDevicePort");
+    const btnTestFaceConnection = document.getElementById("btnTestFaceConnection");
+    const faceConnectionStatus = document.getElementById("faceConnectionStatus");
+    const jetsonDetectedIp = document.getElementById("jetsonDetectedIp");
+    const btnUseDetectedJetsonIp = document.getElementById("btnUseDetectedJetsonIp");
+    const jetsonLanUrl = document.getElementById("jetsonLanUrl");
+    const jetsonTailnetIp = document.getElementById("jetsonTailnetIp");
+    const jetsonPublicUrl = document.getElementById("jetsonPublicUrl");
+    const faceDeviceUrl = document.getElementById("faceDeviceUrl");
+    const settingDisplayPreset = document.getElementById("settingDisplayPreset");
+    const settingDisplayDiagonal = document.getElementById("settingDisplayDiagonal");
+    const displayMetricsText = document.getElementById("displayMetricsText");
+    const displayCalibrationStatus = document.getElementById("displayCalibrationStatus");
+
+    let cachedSettings = null;
+    let cachedHardware = null;
+    const instructionScenes = {
+      stand: ["Vị trí ngồi / đứng", "/static/art/vitringoi.jpg"],
+      face: ["Nhận diện khuôn mặt", "/static/art/huongdanquetkhuonmat.jpg"],
+      cover_right: ["Che mắt phải", "/static/art/domattrai.jpg"],
+      cover_left: ["Che mắt trái", "/static/art/domatphai.jpg"],
+    };
+    const instructionImages = document.getElementById("instructionImageSettings");
+    let savedInstructionImages = {};
+    const pendingInstructionImages = new Map();
+    const pendingImageUrls = new Map();
+
+    function clearPendingInstructionImages() {
+      pendingImageUrls.forEach(url => URL.revokeObjectURL(url));
+      pendingImageUrls.clear();
+      pendingInstructionImages.clear();
+    }
+
+    function renderInstructionImages() {
+      instructionImages.replaceChildren();
+      Object.entries(instructionScenes).forEach(([scene, [label, fallback]]) => {
+        const card = document.createElement("div");
+        card.className = "instruction-image-card";
+        const title = document.createElement("strong");
+        title.textContent = label;
+        const image = document.createElement("img");
+        image.alt = label;
+        image.src = pendingImageUrls.get(scene) ||
+          (pendingInstructionImages.get(scene) === null ? fallback : (savedInstructionImages[scene]?.url || fallback));
+        image.onerror = () => { if (image.src !== new URL(fallback, location.href).href) image.src = fallback; };
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/jpeg,image/png,image/webp";
+        input.setAttribute("aria-label", `Thay ảnh ${label}`);
+        input.addEventListener("change", () => {
+          const file = input.files?.[0];
+          if (!file) return;
+          if (file.size > 10 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+            showToast("Chọn ảnh JPEG, PNG hoặc WebP nhỏ hơn 10 MB");
+            input.value = "";
+            return;
+          }
+          if (pendingImageUrls.has(scene)) URL.revokeObjectURL(pendingImageUrls.get(scene));
+          pendingInstructionImages.set(scene, file);
+          pendingImageUrls.set(scene, URL.createObjectURL(file));
+          renderInstructionImages();
+        });
+        const reset = document.createElement("button");
+        reset.type = "button";
+        reset.className = "btn";
+        reset.textContent = "Khôi phục ảnh mặc định";
+        reset.addEventListener("click", () => {
+          if (pendingImageUrls.has(scene)) URL.revokeObjectURL(pendingImageUrls.get(scene));
+          pendingImageUrls.delete(scene);
+          pendingInstructionImages.set(scene, null);
+          renderInstructionImages();
+        });
+        card.append(title, image, input, reset);
+        instructionImages.appendChild(card);
+      });
+    }
+
+    async function loadInstructionImages() {
+      const response = await fetch("/api/instruction-images", { cache: "no-store" });
+      if (!response.ok) throw new Error("Không tải được ảnh hướng dẫn");
+      savedInstructionImages = (await response.json()).images || {};
+      renderInstructionImages();
+    }
+
+    function populateSelect(selectEl, items, selectedValue, defaultLabel) {
+      selectEl.innerHTML = "";
+      let found = false;
+      if (defaultLabel) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = defaultLabel;
+        selectEl.appendChild(opt);
+      }
+      (items || []).forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = item.label || item.name || item.id;
+        if (String(item.id) === String(selectedValue)) {
+          opt.selected = true;
+          found = true;
+        }
+        selectEl.appendChild(opt);
+      });
+      if (selectedValue && !found) {
+        const customOpt = document.createElement("option");
+        customOpt.value = selectedValue;
+        customOpt.textContent = selectedValue + " (Tùy chỉnh)";
+        customOpt.selected = true;
+        selectEl.appendChild(customOpt);
+      }
+    }
+
+    function applySettingsToForm(s, hw) {
+      if (!s) return;
+      if (hw) {
+        populateSelect(settingCameraSource, hw.cameras, s.camera_source);
+        const mics = hw.microphones || hw.sounddevice_mics || [];
+        populateSelect(settingInputDevice, mics, s.input_device, "-- Mặc định hệ thống --");
+        const spks = hw.speakers || hw.sounddevice_spks || [];
+        populateSelect(settingOutputDevice, spks, s.output_device, "-- Mặc định hệ thống --");
+      }
+
+      settingInputMode.value = s.input_mode || "speak";
+      settingVoiceGender.value = s.voice_gender || "auto";
+      settingDistanceM.value = s.distance_m ?? 5.0;
+
+      settingLetterChunk.value = s.letter_chunk_seconds ?? 3.0;
+      valLetterChunk.textContent = parseFloat(settingLetterChunk.value).toFixed(1) + " s";
+      settingTabletChunk.value = s.tablet_chunk_seconds ?? 10.0;
+      valTabletChunk.textContent = parseFloat(settingTabletChunk.value).toFixed(1) + " s";
+
+      settingUncertainThreshold.value = s.letter_uncertain_threshold ?? 0.45;
+      valUncertainThreshold.textContent = parseFloat(settingUncertainThreshold.value).toFixed(2);
+      settingAcceptThreshold.value = s.letter_accept_threshold ?? 0.75;
+      valAcceptThreshold.textContent = parseFloat(settingAcceptThreshold.value).toFixed(2);
+      settingMaxReplacements.value = s.max_letter_replacements ?? 1;
+      settingLeftStartEasier.value = s.left_eye_start_easier_steps ?? 1;
+
+      settingVpsIp.value = s.vps_ip || "";
+      settingVpsMqttPort.value = s.vps_mqtt_port ?? 1883;
+      settingFrappeUrl.value = s.frappe_url || "";
+      settingJetsonFaceIp.value = s.jetson_face_ip || "";
+      settingJetsonFacePort.value = s.jetson_face_port ?? 7788;
+      settingFaceDeviceIp.value = s.face_device_ip || "";
+      settingFaceDevicePort.value = s.face_device_port ?? 80;
+      jetsonDetectedIp.textContent = s.jetson_detected_ip || "Không phát hiện";
+      btnUseDetectedJetsonIp.disabled = !s.jetson_detected_ip;
+      jetsonLanUrl.textContent = s.jetson_lan_url || "Không có";
+      jetsonTailnetIp.textContent = s.jetson_tailnet_ip || "Không có";
+      jetsonPublicUrl.textContent = s.jetson_public_url || window.location.origin;
+      faceDeviceUrl.textContent = s.face_device_url || faceUrlFromForm();
+      refreshVpsEndpointSummary(s);
+      settingDisplayDiagonal.value = Number(s.display_diagonal_inches || 32).toFixed(1);
+      const knownDiagonal = [27, 32, 40, 43, 55].find(v => Math.abs(v - Number(s.display_diagonal_inches)) < 0.05);
+      settingDisplayPreset.value = knownDiagonal ? String(knownDiagonal) : "custom";
+      const dm = s.display_metrics || {};
+      displayMetricsText.textContent = dm.screen_width
+        ? `Chart Jetson: ${dm.screen_width} × ${dm.screen_height} CSS px · tỷ lệ ${Number(s.display_effective_px_per_mm || 0).toFixed(3)} px/mm`
+        : "Chưa nhận thông tin từ chart kiosk Jetson; sẽ dùng độ phân giải dự phòng khi khởi động.";
+      refreshDisplayCalibration();
+      setVpsConnectionStatus("Chưa kiểm tra", "");
+      setFaceConnectionStatus("Chưa kiểm tra", "");
+    }
+
+    function setVpsConnectionStatus(message, state) {
+      vpsConnectionStatus.textContent = message;
+      vpsConnectionStatus.className = "connection-status" + (state ? " " + state : "");
+    }
+
+    function vpsConnectionPayload() {
+      return {
+        vps_ip: settingVpsIp.value.trim(),
+        vps_mqtt_port: Number(settingVpsMqttPort.value),
+        frappe_url: settingFrappeUrl.value.trim().replace(/\/$/, ""),
+      };
+    }
+
+    function faceUrlFromForm() {
+      const ip = settingFaceDeviceIp.value.trim();
+      const port = Number(settingFaceDevicePort.value || 80);
+      return ip ? `http://${ip}:${port}` : "Không có";
+    }
+
+    function refreshVpsEndpointSummary(source = null) {
+      const vps = vpsConnectionPayload();
+      const lines = [
+        ["Frappe", vps.frappe_url || "—"],
+        ["MQTT", vps.vps_ip ? `${vps.vps_ip}:${vps.vps_mqtt_port}` : "—"],
+        ["Media", source?.vps_media_url || (vps.vps_ip ? `http://${vps.vps_ip}:9010` : "—")],
+        ["Face VectorDB", source?.vps_vectordb_url || (vps.vps_ip ? `http://${vps.vps_ip}:8100` : "—")],
+      ];
+      vpsEndpointSummary.replaceChildren(...lines.map(([label, value]) => {
+        const row = document.createElement("div");
+        const title = document.createElement("strong");
+        title.textContent = label + ": ";
+        row.append(title, document.createTextNode(value));
+        return row;
+      }));
+    }
+
+    function setFaceConnectionStatus(message, state) {
+      faceConnectionStatus.textContent = message;
+      faceConnectionStatus.className = "connection-status" + (state ? " " + state : "");
+    }
+
+    function faceConnectionPayload() {
+      return {
+        jetson_face_ip: settingJetsonFaceIp.value.trim(),
+        jetson_face_port: Number(settingJetsonFacePort.value),
+        face_device_ip: settingFaceDeviceIp.value.trim(),
+        face_device_port: Number(settingFaceDevicePort.value),
+      };
+    }
+
+    function autoDisplayPxPerMm() {
+      const dm = cachedSettings?.display_metrics || {};
+      const diagonal = Number(settingDisplayDiagonal.value);
+      const width = Number(dm.screen_width);
+      const height = Number(dm.screen_height);
+      if (!(diagonal > 0 && width > 0 && height > 0)) return null;
+      return Math.hypot(width, height) / (diagonal * 25.4);
+    }
+
+    function refreshDisplayCalibration(showMessage = true) {
+      if (!showMessage) return;
+      const ppm = autoDisplayPxPerMm();
+      displayCalibrationStatus.className = "connection-status" + (ppm ? " ok" : "");
+      displayCalibrationStatus.textContent = ppm
+        ? `Tự động tính ${ppm.toFixed(3)} px/mm từ màn hình Jetson và ${settingDisplayDiagonal.value} inch.`
+        : "Đang chờ thông số chart kiosk trên Jetson.";
+    }
+
+    function displayCalibrationPayload() {
+      return {
+        display_calibration_mode: "auto",
+        display_diagonal_inches: Number(settingDisplayDiagonal.value),
+      };
+    }
+
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        if (data && data.ok) {
+          cachedSettings = data.settings;
+          cachedHardware = data.hardware;
+          applySettingsToForm(cachedSettings, cachedHardware);
+          await loadInstructionImages();
+        } else {
+          showToast("Không thể tải cấu hình: " + (data.error || "Lỗi"));
+        }
+      } catch (err) {
+        showToast("Lỗi kết nối máy chủ khi tải cấu hình");
+      }
+    }
+
+    function openSettings() {
+      clearPendingInstructionImages();
+      settingsModal.classList.add("open");
+      loadSettings();
+    }
+
+    function closeSettings() {
+      clearPendingInstructionImages();
+      settingsModal.classList.remove("open");
+    }
+
+    settingLetterChunk.addEventListener("input", e => {
+      valLetterChunk.textContent = parseFloat(e.target.value).toFixed(1) + " s";
+    });
+    settingTabletChunk.addEventListener("input", e => {
+      valTabletChunk.textContent = parseFloat(e.target.value).toFixed(1) + " s";
+    });
+
+    settingUncertainThreshold.addEventListener("input", e => {
+      valUncertainThreshold.textContent = parseFloat(e.target.value).toFixed(2);
+    });
+
+    settingAcceptThreshold.addEventListener("input", e => {
+      valAcceptThreshold.textContent = parseFloat(e.target.value).toFixed(2);
+    });
+
+    [settingVpsIp, settingVpsMqttPort, settingFrappeUrl]
+      .forEach(el => el.addEventListener("input", () => {
+        refreshVpsEndpointSummary();
+        setVpsConnectionStatus("Cấu hình đã thay đổi — cần kiểm tra lại", "");
+      }));
+
+    [settingJetsonFaceIp, settingJetsonFacePort, settingFaceDeviceIp, settingFaceDevicePort]
+      .forEach(el => el.addEventListener("input", () => {
+        faceDeviceUrl.textContent = faceUrlFromForm();
+        setFaceConnectionStatus("Cấu hình đã thay đổi — cần kiểm tra lại", "");
+      }));
+
+    btnUseDetectedJetsonIp.addEventListener("click", () => {
+      if (jetsonDetectedIp.textContent && jetsonDetectedIp.textContent !== "Không phát hiện") {
+        settingJetsonFaceIp.value = jetsonDetectedIp.textContent;
+        setFaceConnectionStatus("Đã chọn IP Jetson hiện tại — hãy kiểm tra kết nối", "");
+      }
+    });
+
+    settingDisplayPreset.addEventListener("change", () => {
+      if (settingDisplayPreset.value !== "custom") {
+        settingDisplayDiagonal.value = Number(settingDisplayPreset.value).toFixed(1);
+      }
+      refreshDisplayCalibration();
+    });
+    settingDisplayDiagonal.addEventListener("input", () => {
+      settingDisplayPreset.value = "custom";
+      refreshDisplayCalibration();
+    });
+
+    btnTestVpsConnection.addEventListener("click", async () => {
+      btnTestVpsConnection.disabled = true;
+      btnTestVpsConnection.textContent = "Đang kiểm tra...";
+      setVpsConnectionStatus("Đang kiểm tra Frappe và các service VPS", "");
+      try {
+        const res = await fetch("/api/settings/vps/test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(vpsConnectionPayload()),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          setVpsConnectionStatus("Đã kết nối Frappe, MQTT, Media và Face VectorDB", "ok");
+        } else {
+          const failed = Object.entries(data.ports || {}).filter(([, ok]) => !ok).map(([name]) => name);
+          const reason = data.frappe?.error || (failed.length ? `Không kết nối: ${failed.join(", ")}` : data.error);
+          setVpsConnectionStatus(reason || "Kiểm tra VPS thất bại", "error");
+        }
+      } catch (err) {
+        setVpsConnectionStatus("Không gọi được dịch vụ kiểm tra: " + err.message, "error");
+      } finally {
+        btnTestVpsConnection.disabled = false;
+        btnTestVpsConnection.textContent = "Kiểm tra VPS";
+      }
+    });
+
+    btnTestFaceConnection.addEventListener("click", async () => {
+      btnTestFaceConnection.disabled = true;
+      btnTestFaceConnection.textContent = "Đang kiểm tra...";
+      setFaceConnectionStatus("Đang kiểm tra hai chiều kết nối", "");
+      try {
+        const res = await fetch("/api/settings/face/test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(faceConnectionPayload()),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          const model = data.face_device?.model ? ` (${data.face_device.model})` : "";
+          setFaceConnectionStatus(`Đã kết nối Face ID${model}; Jetson đang nhận tại ${data.jetson_receiver.endpoint}`, "ok");
+        } else {
+          const errors = [data.face_device?.error, data.jetson_receiver?.error, data.error].filter(Boolean);
+          setFaceConnectionStatus(errors[0] || "Kiểm tra kết nối thất bại", "error");
+        }
+      } catch (err) {
+        setFaceConnectionStatus("Không gọi được dịch vụ kiểm tra: " + err.message, "error");
+      } finally {
+        btnTestFaceConnection.disabled = false;
+        btnTestFaceConnection.textContent = "Kiểm tra kết nối";
+      }
+    });
+
+    btnApplySettings.addEventListener("click", async () => {
+      const payload = {
+        camera_source: settingCameraSource.value,
+        input_mode: settingInputMode.value,
+        input_device: settingInputDevice.value,
+        output_device: settingOutputDevice.value,
+        voice_gender: settingVoiceGender.value,
+        distance_m: parseFloat(settingDistanceM.value) || 5.0,
+        letter_chunk_seconds: parseFloat(settingLetterChunk.value) || 3.0,
+        tablet_chunk_seconds: parseFloat(settingTabletChunk.value) || 10.0,
+        letter_uncertain_threshold: parseFloat(settingUncertainThreshold.value),
+        letter_accept_threshold: parseFloat(settingAcceptThreshold.value),
+        max_letter_replacements: parseInt(settingMaxReplacements.value, 10),
+        left_eye_start_easier_steps: parseInt(settingLeftStartEasier.value, 10),
+        ...vpsConnectionPayload(),
+        ...faceConnectionPayload(),
+        ...displayCalibrationPayload(),
+      };
+
+      btnApplySettings.disabled = true;
+      btnApplySettings.innerHTML = "Đang lưu...";
+      try {
+        const res = await fetch("/api/settings", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+          for (const [scene, file] of pendingInstructionImages) {
+            const imageResponse = await fetch(`/api/instruction-images/${scene}`, {
+              method: file ? "PUT" : "DELETE",
+              headers: file ? { "Content-Type": file.type } : {},
+              body: file || undefined,
+            });
+            if (!imageResponse.ok) {
+              const detail = await imageResponse.json();
+              throw new Error(`${instructionScenes[scene][0]}: ${detail.detail || "Không lưu được ảnh"}`);
+            }
+          }
+          showToast(data.message || "Đã lưu và áp dụng cấu hình thành công!");
+          cachedSettings = { ...cachedSettings, ...payload };
+          closeSettings();
+        } else {
+          showToast("Lỗi: " + (data.error || "Không thể cập nhật"));
+        }
+      } catch (err) {
+        showToast("Lỗi lưu cấu hình: " + err.message);
+      } finally {
+        btnApplySettings.disabled = false;
+        btnApplySettings.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Lưu & Áp dụng';
+      }
+    });
+
+    btnResetSettings.addEventListener("click", () => {
+      if (cachedSettings) {
+        clearPendingInstructionImages();
+        renderInstructionImages();
+        applySettingsToForm(cachedSettings, cachedHardware);
+        showToast("Đã khôi phục về cấu hình đang lưu");
+      }
+    });
+
+    btnSettings.addEventListener("click", openSettings);
+    btnCloseSettingsModal.addEventListener("click", closeSettings);
+    btnCancelSettings.addEventListener("click", closeSettings);
+    settingsModal.addEventListener("click", e => {
+      if (e.target === settingsModal) closeSettings();
+    });
+
+    feed.addEventListener("load", resizeWrapper);
+    window.addEventListener("resize", resizeWrapper);
+
+    setTool("box");
+    loadZone();
+    tick();
+    setInterval(tick, 700);
+    setInterval(() => { if (previewOn) drawOverlay(); }, 400);
+  </script>
+</body>
+</html>

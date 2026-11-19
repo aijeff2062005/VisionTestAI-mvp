@@ -1,0 +1,15 @@
+# Quân y direct-patient profile. Inherit the station, protocol, audio and
+# readiness settings from the shared clinic deployment; override only flow.
+extends: clinic.yaml
+
+cccd_qr:
+  enabled: false
+  after_face: false
+
+face_vectordb:
+  enabled: false
+  auto_start_on_face: false
+
+bridges:
+  face:
+    mode: "off"

@@ -1,0 +1,16 @@
+{
+  "doctype": "Page",
+  "name": "visioncare",
+  "page_name": "visioncare",
+  "title": "VisionCare Hospital",
+  "module": "QY Vision Hospital",
+  "icon": "eye",
+  "standard": "Yes",
+  "system_page": 0,
+  "roles": [
+    {"role": "Nursing User"},
+    {"role": "Physician"},
+    {"role": "Healthcare Administrator"},
+    {"role": "System Manager"}
+  ]
+}

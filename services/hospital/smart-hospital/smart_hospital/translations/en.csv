@@ -1,0 +1,43 @@
+source,target
+Quản trị phòng khám,Clinic Administration
+Trạm điều dưỡng,Nurse Station
+Duyệt kết quả,Review Results
+Đăng ký bệnh nhân,Patient Registration
+Đăng kí hồ sơ bệnh nhân,Patient Registration
+Đặt lịch thị lực,Vision Appointment
+Bệnh nhân,Patient
+Bệnh nhân mới,New Patient
+Danh sách bệnh nhân,Patient List
+Lịch hẹn,Appointments
+Lịch hẹn hôm nay,Today's Appointments
+Kết quả khám,Examination Results
+Hồ sơ bệnh nhân,Patient Records
+Thị lực,Visual Acuity
+Đơn kính,Eye Prescription
+Lần đo,Measurements
+Kết nối Jetson,Jetson Connection
+Hệ thống,System
+Cài đặt Healthcare,Healthcare Settings
+Your Shortcuts,Your Shortcuts
+Reports &amp; Masters,Reports &amp; Masters
+Bệnh Nhân,Patient
+Đo bởi,Measured by
+Độ cầu mắt phải,Right eye sphere
+Độ loạn mắt phải,Right eye cylinder
+Trục độ loạn mắt phải,Right eye axis
+Độ tăng thêm mắt phải,Right eye add
+Khoảng cách đồng tử mắt phải,Right pupil distance
+Nhãn áp mắt phải,Right eye intraocular pressure
+Độ cầu mắt trái,Left eye sphere
+Độ loạn mắt trái,Left eye cylinder
+Trục độ loạn mắt trái,Left eye axis
+Độ tăng thêm mắt trái,Left eye add
+Khoảng cách đồng tử mắt trái,Left pupil distance
+Nhãn áp mắt trái,Left eye intraocular pressure
+Thị Lực,Visual Acuity
+Phiên đo từ Jetson,Jetson measurement session
+Điểm mắt phải,Right eye score
+Điểm mắt trái,Left eye score
+Điểm cả hai mắt,Both eyes score
+Thông tin đo thị lực,Visual acuity information
+Dữ liệu kết quả gốc (JSON),Raw result data (JSON)

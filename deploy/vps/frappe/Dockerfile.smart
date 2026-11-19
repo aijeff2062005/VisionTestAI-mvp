@@ -1,0 +1,47 @@
+# Layer local smart_hospital onto an erpnext+healthcare custom image.
+ARG BASE_IMAGE=visiontestai/frappe:v16-hc
+FROM ${BASE_IMAGE}
+
+USER root
+# CRITICAL: ffmpeg is required. Desk face scan posts WebM to
+# smart_hospital.api.face_service_api.register, which converts to MP4
+# then POSTs GDU /api/v2/face_registration/without_mask (Milvus/Attu).
+# Without ffmpeg the convert raises FileNotFoundError and GDU is never called.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ffmpeg \
+  && ffmpeg -version >/dev/null \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --chown=frappe:frappe services/hospital/smart-hospital /home/frappe/frappe-bench/apps/smart_hospital
+COPY --chown=frappe:frappe services/hospital/qy-vision-hospital /home/frappe/frappe-bench/apps/qy_vision_hospital
+COPY --chown=frappe:frappe services/hospital/tv-vision-hospital /home/frappe/frappe-bench/apps/tv_vision_hospital
+COPY --chown=frappe:frappe deploy/vps/frappe/provision_sites.sh /usr/local/bin/visiontestai-provision-sites
+RUN chmod 0755 /usr/local/bin/visiontestai-provision-sites
+
+USER frappe
+WORKDIR /home/frappe/frappe-bench
+# Ensure apps listing has trailing newlines before append.
+RUN ./env/bin/pip install --quiet -e apps/smart_hospital -e apps/qy_vision_hospital \
+  -e apps/tv_vision_hospital -e apps/solvronix_desk "paho-mqtt>=1.6.1,<3" \
+  && mkdir -p apps/qy_vision_hospital/qy_vision_hospital/public apps/tv_vision_hospital/tv_vision_hospital/public \
+  && (test -f sites/apps.txt || touch sites/apps.txt) \
+  && (test -f apps.txt || touch apps.txt) \
+  && printf '\n' >> sites/apps.txt \
+  && printf '\n' >> apps.txt \
+  && grep -qxF solvronix_desk sites/apps.txt || echo solvronix_desk >> sites/apps.txt \
+  && grep -qxF smart_hospital sites/apps.txt || echo smart_hospital >> sites/apps.txt \
+  && grep -qxF qy_vision_hospital sites/apps.txt || echo qy_vision_hospital >> sites/apps.txt \
+  && grep -qxF tv_vision_hospital sites/apps.txt || echo tv_vision_hospital >> sites/apps.txt \
+  && grep -qxF solvronix_desk apps.txt || echo solvronix_desk >> apps.txt \
+  && grep -qxF smart_hospital apps.txt || echo smart_hospital >> apps.txt \
+  && grep -qxF qy_vision_hospital apps.txt || echo qy_vision_hospital >> apps.txt \
+  && grep -qxF tv_vision_hospital apps.txt || echo tv_vision_hospital >> apps.txt \
+  && ln -sfn /home/frappe/frappe-bench/apps/solvronix_desk/solvronix_desk/public \
+        /home/frappe/frappe-bench/assets/solvronix_desk \
+  && ln -sfn /home/frappe/frappe-bench/apps/smart_hospital/smart_hospital/public \
+        /home/frappe/frappe-bench/assets/smart_hospital \
+  && ln -sfn /home/frappe/frappe-bench/apps/qy_vision_hospital/qy_vision_hospital/public \
+        /home/frappe/frappe-bench/assets/qy_vision_hospital \
+  && ln -sfn /home/frappe/frappe-bench/apps/tv_vision_hospital/tv_vision_hospital/public \
+        /home/frappe/frappe-bench/assets/tv_vision_hospital \
+  && ./env/bin/python -c "import solvronix_desk, smart_hospital, qy_vision_hospital, tv_vision_hospital, paho.mqtt.publish; print('hospital apps available')"

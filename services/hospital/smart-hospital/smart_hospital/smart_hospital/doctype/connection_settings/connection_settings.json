@@ -1,0 +1,62 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-07-19 19:41:30.495032",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_clinic",
+  "aiface_station_url"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_clinic",
+   "fieldtype": "Section Break",
+   "label": "Clinic station"
+  },
+  {
+   "default": "http://192.168.1.125:8088",
+   "description": "Jetson Assistant Controller URL for same-day AiFace sync, wipe, and identify. Desk face enroll uses the browser webcam only.",
+   "fieldname": "aiface_station_url",
+   "fieldtype": "Data",
+   "label": "AiFace Station URL",
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-12 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Smart Hospital",
+ "name": "Connection Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 0,
+   "print": 0,
+   "read": 1,
+   "role": "Healthcare Administrator",
+   "share": 0,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

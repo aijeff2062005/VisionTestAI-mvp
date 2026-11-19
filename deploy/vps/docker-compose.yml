@@ -1,0 +1,96 @@
+# VisionTestAI hospital stack on Coder VPS
+# Project name: visiontestai
+# NEVER: reboot host, docker system prune, or touch workspace/SALAD*
+#
+# Core (always):
+#   docker compose -p visiontestai --env-file ../env/lab.env.example up -d --build
+#
+# Frappe on :8000 (replaces FastAPI hospital):
+#   ./frappe/up_frappe.sh
+#
+# Legacy FastAPI hospital (profile):
+#   docker compose -p visiontestai --profile legacy-hospital up -d hospital
+
+name: visiontestai
+
+services:
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: visiontestai-mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto_passwd:/mosquitto/config/passwd:ro
+      - visiontestai-mqtt-data:/mosquitto/data
+    mem_limit: 256m
+    cpus: 0.5
+
+  hospital:
+    profiles: ["legacy-hospital"]
+    build:
+      context: ../../services/hospital/hospital_api
+    container_name: visiontestai-hospital
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - visiontestai-hospital-data:/app/data
+    mem_limit: 512m
+    cpus: 0.5
+
+  media:
+    build:
+      context: ../../services/media_server
+    container_name: visiontestai-media
+    restart: unless-stopped
+    ports:
+      - "9010:9010"
+    environment:
+      MEDIA_ROOT: /data
+      MEDIA_PUBLIC_BASE: ${MEDIA_PUBLIC_BASE:-http://103.249.117.203:9010}
+      MQTT_HOST: mqtt
+      MQTT_PORT: "1883"
+      MQTT_USERNAME: ${MQTT_USERNAME:-vision}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-mqtt-dev-pass}
+      MEDIA_TOKEN: ${MEDIA_TOKEN:-dev-media-token}
+      MEDIA_STATIONS: ${MEDIA_STATIONS:-station-01}
+    volumes:
+      - visiontestai-media-data:/data
+    depends_on:
+      - mqtt
+    mem_limit: 512m
+    cpus: 0.5
+
+  face_vectordb:
+    build:
+      context: ../../services/face_vectordb
+    container_name: visiontestai-face-vectordb
+    restart: unless-stopped
+    ports:
+      - "8100:8100"
+    environment:
+      FACE_VDB_DATA: /data
+      FACE_VDB_API_KEY: ${FACE_VDB_API_KEY:-dev-face-vdb-key}
+      FACE_VDB_SEED_DEMO: ${FACE_VDB_SEED_DEMO:-1}
+    volumes:
+      - visiontestai-face-vdb-data:/data
+    mem_limit: 512m
+    cpus: 0.5
+
+  qr_decode:
+    build:
+      context: ../../services/qr_decode
+    container_name: visiontestai-qr-decode
+    restart: unless-stopped
+    ports:
+      - "9020:9020"
+    mem_limit: 512m
+    cpus: 0.5
+
+volumes:
+  visiontestai-mqtt-data:
+  visiontestai-hospital-data:
+  visiontestai-media-data:
+  visiontestai-face-vdb-data:

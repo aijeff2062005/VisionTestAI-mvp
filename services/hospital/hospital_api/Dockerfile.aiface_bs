@@ -1,0 +1,7 @@
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY aiface_bs.py .
+EXPOSE 7788 7790
+CMD ["python", "aiface_bs.py"]

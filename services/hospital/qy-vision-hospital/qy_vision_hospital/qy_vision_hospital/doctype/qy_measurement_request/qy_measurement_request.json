@@ -1,0 +1,27 @@
+{
+ "doctype": "DocType",
+ "name": "QY Measurement Request",
+ "module": "QY Vision Hospital",
+ "engine": "InnoDB",
+ "autoname": "hash",
+ "allow_rename": 0,
+ "track_changes": 1,
+ "field_order": ["patient", "his_patient_id", "cccd_last4", "measurement_date", "received_at", "source_file", "source_key", "status", "vision_measurement"],
+ "fields": [
+  {"fieldname": "patient", "label": "Bệnh nhân", "fieldtype": "Link", "options": "Patient", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "his_patient_id", "label": "Mã bệnh nhân HIS", "fieldtype": "Data", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "cccd_last4", "label": "4 số cuối CCCD", "fieldtype": "Data", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "measurement_date", "label": "Ngày đo", "fieldtype": "Date", "default": "Today", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "received_at", "label": "Thời điểm nhận", "fieldtype": "Datetime", "reqd": 1, "read_only": 1, "in_list_view": 1},
+  {"fieldname": "source_file", "label": "File nguồn", "fieldtype": "Data", "read_only": 1},
+  {"fieldname": "source_key", "label": "Khóa file nguồn", "fieldtype": "Data", "read_only": 1, "unique": 1, "hidden": 1},
+  {"fieldname": "status", "label": "Trạng thái", "fieldtype": "Select", "options": "Chờ đo\nĐang đo\nHoàn tất\nĐã hủy", "default": "Chờ đo", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "vision_measurement", "label": "Phiên đo", "fieldtype": "Link", "options": "Vision Measurement", "read_only": 1}
+ ],
+ "permissions": [
+  {"role": "Nursing User", "read": 1, "create": 0, "write": 0, "delete": 0, "report": 1},
+  {"role": "Physician", "read": 1, "create": 0, "write": 0, "delete": 0, "report": 1},
+  {"role": "Healthcare Administrator", "read": 1, "create": 1, "write": 1, "delete": 0, "report": 1},
+  {"role": "System Manager", "read": 1, "create": 1, "write": 1, "delete": 1, "report": 1}
+ ]
+}

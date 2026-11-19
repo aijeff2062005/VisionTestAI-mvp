@@ -1,0 +1,18 @@
+{
+  "frappe": {
+    "tag": "v16.56.0",
+    "commit": "49789a1711d4dde2be9c6888efe35651465f4b64"
+  },
+  "erpnext": {
+    "tag": "v16.55.0",
+    "commit": "8e10a348daaa93853de8c36dc55ec789a440c219"
+  },
+  "healthcare": {
+    "tag": "v16.8.0",
+    "commit": "b243ec7445a558e4168d480a2615a23b4c5083c9"
+  },
+  "solvronix_desk": {
+    "tag": "v3.0.1",
+    "commit": "c71f0ff26ed551ba81d31c09fa52667c5fd4af0f"
+  }
+}

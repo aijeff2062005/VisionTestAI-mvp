@@ -1,0 +1,17 @@
+{
+ "doctype": "Page",
+ "name": "visioncare",
+ "page_name": "visioncare",
+ "module": "TV Vision Hospital",
+ "title": "VisionCare Hospital",
+ "icon": "eye",
+ "standard": "Yes",
+ "system_page": 0,
+ "roles": [
+  {"role": "Guest"},
+  {"role": "Nursing User"},
+  {"role": "Physician"},
+  {"role": "Healthcare Administrator"},
+  {"role": "System Manager"}
+ ]
+}

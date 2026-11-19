@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yêu cầu cấp token Vision Agent</title>
+  <style>
+    body{margin:0;background:#f1f6f7;color:#18252d;font:16px/1.6 "Segoe UI",Arial,sans-serif}
+    main{max-width:760px;margin:36px auto;padding:0 18px}
+    article{background:#fff;border:1px solid #d9e3e7;border-radius:14px;padding:28px;box-shadow:0 8px 24px #15323c12}
+    h1{margin:0 0 8px;font-size:27px;color:#123d46}p{margin:10px 0}
+    ol{padding-left:23px}li{margin:8px 0}
+    code{background:#edf3f5;padding:2px 5px;border-radius:4px;overflow-wrap:anywhere}
+    .ask{background:#eaf6f6;border-left:4px solid #13858a;padding:13px 16px;margin-top:20px}
+    .safe{font-size:14px;color:#52616d}
+  </style>
+</head>
+<body>
+<main><article>
+  <h1>Nhờ cấp API token cho Vision Agent</h1>
+  <p>Nhờ DevOps hỗ trợ cấu hình xác thực để Vision Agent gửi XML HIS lên backend production QY.</p>
+  <ol>
+    <li>Dùng tài khoản dịch vụ riêng <code>qy-xml-integration@example.com</code> trên site QY production; nếu chưa có thì tạo theo lệnh bên dưới. Không dùng tài khoản cá nhân hoặc Administrator.</li>
+    <li>Cấp role được endpoint nhận XML cho phép: <code>Nursing User</code>, <code>Physician</code> hoặc <code>Healthcare Administrator</code>. Ưu tiên role ít quyền nhất theo chính sách bệnh viện; không cấp <code>System Manager</code> nếu không cần.</li>
+    <li>Chạy các lệnh dưới đây trên server production QY để kiểm tra tài khoản và phát hành token mới.</li>
+  </ol>
+  <p><strong>Mở console đúng site production:</strong></p>
+  <pre><code>docker exec -it visiontestai-frappe-backend bash -lc \
+"cd /home/frappe/frappe-bench &amp;&amp; bench --site qdymd.vision.primetek.ai console"</code></pre>
+  <p><strong>Nếu tài khoản chưa tồn tại</strong>, chạy trong Frappe console. DevOps cần thay email nếu tổ chức dùng địa chỉ dịch vụ khác và xác nhận role trước khi tạo:</p>
+  <pre><code>email = "qy-xml-integration@example.com"
+if not frappe.db.exists("User", email):
+    user = frappe.get_doc({
+        "doctype": "User",
+        "email": email,
+        "first_name": "QY XML Integration",
+        "enabled": 1,
+        "user_type": "System User",
+        "send_welcome_email": 0,
+        "roles": [{"role": "Nursing User"}],
+    })
+    user.insert(ignore_permissions=True)
+    frappe.db.commit()
+    print("Tài khoản tích hợp đã được tạo")
+else:
+    print("Tài khoản đã tồn tại; không tạo trùng")</code></pre>
+  <p><strong>Trong Frappe console</strong> (dòng nhắc <code>In [ ]:</code>), kiểm tra user và role:</p>
+  <pre><code>email = "qy-xml-integration@example.com"
+user = frappe.get_doc("User", email)
+print({"email": user.name, "enabled": user.enabled,
+       "roles": [row.role for row in user.roles]})</code></pre>
+  <p>Nếu account đang bật và role đã được duyệt, chạy đoạn này để phát hành token:</p>
+  <pre><code>user.api_key = frappe.generate_hash(length=15)
+api_secret = frappe.generate_hash(length=30)
+user.api_secret = api_secret
+user.save(ignore_permissions=True)
+frappe.db.commit()
+print(f"token {user.api_key}:{api_secret}")</code></pre>
+  <p>Token tạo mới sẽ thay token hiện tại của user này. Kiểm tra trước xem credential cũ có đang được nơi khác dùng không.</p>
+  <div class="ask">
+    <strong>Nhờ gửi lại cho mình qua Disroot Bin:</strong><br>
+    1) API token theo định dạng <code>token API_KEY:API_SECRET</code>; 2) email tài khoản dịch vụ đã cấp quyền.
+  </div>
+  <p>Vision Agent sẽ kết nối tới backend production QY: <code>https://qdymd.vision.primetek.ai</code>.</p>
+  <p class="safe">Token vừa xuất hiện trong chat, vì vậy không dùng lại; hãy phát hành token mới. Vui lòng đặt thời hạn tự xóa ngắn cho Bin nếu có thể. Không gửi token qua chat thường, email, ticket hoặc ảnh chụp. Mình sẽ nhập trực tiếp token mới vào Vision Agent.</p>
+</article></main>
+</body>
+</html>

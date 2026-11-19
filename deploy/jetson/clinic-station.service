@@ -1,0 +1,19 @@
+[Unit]
+Description=VisionTestAI clinic station (chart :8088 + AiFace bridge)
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ivision/ImesPro/VisionTestAI/mvp_platform/services/assistant_controller
+Environment=REPLACE_AC=1
+Environment=PYTHONUNBUFFERED=1
+ExecStartPre=/bin/sleep 8
+ExecStart=/home/ivision/ImesPro/VisionTestAI/mvp_platform/deploy/jetson/start_station.sh
+Restart=always
+RestartSec=8
+KillMode=control-group
+TimeoutStopSec=20
+
+[Install]
+WantedBy=default.target

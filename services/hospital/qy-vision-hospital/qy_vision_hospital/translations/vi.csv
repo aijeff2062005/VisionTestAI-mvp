@@ -1,0 +1,87 @@
+source,context,translated
+Actions,,Thao tác
+Add Patient,,Thêm bệnh nhân
+Additional medical information,,Thông tin y tế bổ sung
+Address,,Địa chỉ
+Allergies,,Dị ứng
+Appointment booked:,,Đã đặt lịch:
+Appointment created,,Đã tạo lịch hẹn
+Appointment removed,,Đã xóa lịch hẹn
+Blood group,,Nhóm máu
+Booking failed,,Đặt lịch thất bại
+Both,,Hai mắt
+Bạn không có quyền xem danh sách bệnh nhân.,,Bạn không có quyền xem danh sách bệnh nhân.
+Cancelled,,Đã hủy
+Citizen ID,,CCCD
+Citizen ID number,,Số CCCD
+Create patient profile,,Tạo hồ sơ bệnh nhân
+Creating patient profile...,,Đang tạo hồ sơ bệnh nhân...
+Date is not valid,,Ngày không hợp lệ
+Date is not valid — cannot book a date in the past,,Ngày không hợp lệ — không thể đặt lịch trong quá khứ
+Done,,Hoàn tất
+Email,,Email
+Enter allergy information,,Nhập thông tin dị ứng
+Enter medication history,,Nhập tiền sử dùng thuốc
+Enter surgical history,,Nhập tiền sử phẫu thuật
+Face,,Khuôn mặt
+Face Service could not be loaded. Reload the page.,,Không tải được dịch vụ nhận diện khuôn mặt. Hãy tải lại trang.
+Face image,,Ảnh khuôn mặt
+Face saved to the patient profile. Face ID #,,Đã lưu khuôn mặt vào hồ sơ bệnh nhân. Face ID #
+Face: saved to the profile.,,Khuôn mặt đã được lưu vào hồ sơ.
+Full name,,Họ tên
+In Progress,,Đang thực hiện
+Loading…,,Đang tải…
+"Look at the camera and take one clear, front-facing photo. The image will be sent to Face ID when the patient is saved.",,"Nhìn vào camera và chụp một ảnh rõ, chính diện. Ảnh sẽ được gửi tới Face ID khi lưu hồ sơ."
+Medication history,,Tiền sử dùng thuốc
+No appointment to remove,,Không có lịch hẹn để xóa
+No face image yet. Scan the face and wait for the saved confirmation before using Face ID.,,Chưa có ảnh khuôn mặt. Hãy quét khuôn mặt và đợi xác nhận lưu trước khi dùng Face ID.
+No image,,Chưa có ảnh
+No visual acuity results yet.,,Chưa có kết quả đo thị lực.
+Not valid,,Không hợp lệ
+Open,,Chờ tiếp nhận
+Open Visual Acuity,,Mở kết quả thị lực
+Opening camera to scan CCCD...,,Đang mở camera quét CCCD...
+Past due — not conducted,,Quá giờ — chưa thực hiện
+Patient,,Bệnh nhân
+Patient information,,Thông tin bệnh nhân
+Patient name,,Tên bệnh nhân
+Patient profile created successfully!,,Tạo hồ sơ bệnh nhân thành công!
+Pending,,Chờ duyệt
+Phone number,,Số điện thoại
+Photo captured. Save the patient profile to send the image to Face ID.,,Đã chụp ảnh. Hãy lưu hồ sơ bệnh nhân để gửi ảnh tới Face ID.
+Photo ready. Create the patient profile to save the image and send it to Face ID.,,Ảnh đã sẵn sàng. Hãy tạo hồ sơ bệnh nhân để lưu ảnh và gửi tới Face ID.
+Place the CCCD QR code in the center of the camera...,,Đưa mã QR CCCD vào giữa khung camera...
+Please enter the citizen ID number.,,Vui lòng nhập CCCD.
+Please enter the first name.,,Vui lòng nhập họ tên.
+Prescription,,Đơn kính
+"QR was read, but the data is not in the correct CCCD format.",,Đã đọc QR nhưng dữ liệu không đúng định dạng CCCD.
+Refresh,,Làm mới
+Register face,,Đăng ký khuôn mặt
+Remove,,Xóa
+Remove failed,,Xóa thất bại
+Removing appointment…,,Đang xóa lịch hẹn…
+Review,,Duyệt
+Reviewed,,Đã duyệt
+Saving the face image to the patient profile…,,Đang lưu ảnh khuôn mặt vào hồ sơ bệnh nhân…
+Saving the face to the patient profile...,,Đang lưu khuôn mặt vào hồ sơ bệnh nhân...
+Scan CCCD,,Quét CCCD
+Scan face again,,Quét lại khuôn mặt
+Scheduled,,Đã lên lịch
+Select a patient,,Chọn bệnh nhân
+Select a result first,,Trước tiên hãy chọn kết quả
+Select blood group,,Chọn nhóm máu
+Start failed,,Bắt đầu đo thất bại
+Starting vision measurement…,,Đang bắt đầu lượt đo thị lực…
+Status,,Trạng thái
+Stop failed,,Dừng đo thất bại
+Stop the in-progress vision measurement on the station?,,Dừng lượt đo thị lực đang diễn ra tại trạm?
+Stopping measurement…,,Đang dừng lượt đo…
+Surgical history,,Tiền sử phẫu thuật
+The API returned no data.,,API không trả về dữ liệu.
+"The photo was taken, but saving to the patient profile or Face ID failed.",,Đã chụp ảnh nhưng không thể lưu vào hồ sơ bệnh nhân hoặc Face ID.
+Unable to create patient.,,Không thể tạo hồ sơ bệnh nhân.
+Unable to load review results.,,Không tải được kết quả cần duyệt.
+Unable to open the CCCD camera. Check the browser camera permission.,,Không mở được camera CCCD. Hãy kiểm tra quyền camera của trình duyệt.
+Unable to save the face:,,Không thể lưu khuôn mặt:
+View result,,Xem kết quả
+Vision examination,,Khám thị lực

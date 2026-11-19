@@ -1,0 +1,23 @@
+/* Keep the legacy Desk and third party setup UI off screen while Frappe
+   resolves the initial route. VisionCare reveals its own UI when ready. */
+body:not(.visioncare-ready) .navbar,
+body:not(.visioncare-ready) #st-top-toolbar,
+body:not(.visioncare-ready) #st-icon-rail,
+body:not(.visioncare-ready) .body-sidebar-container,
+body:not(.visioncare-ready) .body-sidebar,
+body:not(.visioncare-ready) .desk-sidebar,
+body:not(.visioncare-ready) .page-head,
+body:not(.visioncare-ready) .main-section,
+body:not(.visioncare-ready) #page-container,
+body:not(.visioncare-ready) .modal-backdrop,
+body:not(.visioncare-ready) .modal {
+  visibility: hidden !important;
+}
+body:not(.visioncare-ready) {
+  background: #f5f8fa !important;
+}
+
+/* This setup guide belongs to Solvronix Desk, not the VisionCare workflow. */
+#st-setup-guide {
+  display: none !important;
+}

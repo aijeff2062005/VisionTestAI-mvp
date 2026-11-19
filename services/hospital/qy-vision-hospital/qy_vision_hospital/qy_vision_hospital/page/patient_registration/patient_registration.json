@@ -1,0 +1,33 @@
+{
+ "content": null,
+ "creation": "2026-07-22 12:29:51.702800",
+ "docstatus": 0,
+ "doctype": "Page",
+ "icon": "user-plus",
+ "idx": 0,
+ "modified": "2026-10-16 02:34:49.000000",
+ "modified_by": "Administrator",
+ "module": "QY Vision Hospital",
+ "name": "patient-registration",
+ "owner": "Administrator",
+ "page_name": "patient-registration",
+ "roles": [
+  {
+   "role": "Nursing User"
+  },
+  {
+   "role": "Physician"
+  },
+  {
+   "role": "Healthcare Administrator"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Đăng ký bệnh nhân"
+}

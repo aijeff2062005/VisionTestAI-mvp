@@ -1,0 +1,109 @@
+# Alternate clinic profile using the Model A-only threshold-band protocol.
+# Usage:
+#   CONFIG=configs/clinic_confirm.yaml ./start_station.sh
+#   # or: LETTER_PROTOCOL=confirm with clinic.yaml
+station_id: station-01
+
+mqtt:
+  host: 192.168.1.78
+  port: 1883
+  username: "vision"
+  password: ""
+  keepalive: 60
+
+hospital:
+  base_url: http://192.168.1.78:8000
+  timeout_seconds: 10.0
+  api_key: ""
+  api_secret: ""
+
+media:
+  enabled: true
+  base_url: http://192.168.1.78:9010
+  token: ""
+  timeout_seconds: 30.0
+
+face_vectordb:
+  enabled: true
+  mode: http
+  base_url: http://192.168.1.78:8100
+  api_key: ""
+  api_key_header: X-Api-Key
+  timeout_seconds: 15.0
+  list_path: /v1/faces
+  get_path: /v1/faces/{enroll_id}
+  image_path: /v1/faces/{enroll_id}/image
+  sync_on_startup: true
+  sync_before_identify: true
+  sync_today_appointments_only: true
+  prune_not_in_today: true
+  sync_today_poll_seconds: 10
+  auto_start_on_face: true
+  overnight_wipe_enabled: true
+  overnight_wipe_hour: 0
+  overnight_wipe_minute: 5
+  max_faces: 500
+  device_face_backupnum: 50
+
+face_devices:
+  - id: front-door
+    host: 192.168.1.22
+    role: front_door
+  - id: vision-room
+    host: 192.168.1.18
+    role: vision_room
+
+http:
+  timeout_seconds: 10.0
+
+display:
+  host: 0.0.0.0
+  port: 8088
+
+protocol:
+  distance_m: 5.0
+  letters_per_row: 5
+  adaptive_row_testing: false
+  snellen_stop_on_fail: true
+  max_misses: 2
+  letter_uncertain_threshold: 0.45
+  letter_accept_threshold: 0.75
+  letter_timeout_seconds: 15
+  same_size_retries: 0
+  staircase: true
+  start_logmar: 0.69897
+  logmar_step: 0.1
+  row_logmars: [1.0, 0.69897, 0.52288, 0.39794, 0.30103, 0.22185, 0.15490, 0.09691, 0.04576, 0.0]
+  max_rows_per_eye: 16
+  readiness_timeout_seconds: 180.0
+  demo_mode: false
+  allow_step_skip: true
+
+paths:
+  dmn: dmn/acuity_flow.dmn
+  scenarios: scenarios/vi/manifest.yaml
+  journals: data/journals
+
+bridges:
+  readiness: smarteyes
+  stt: ui
+  face:
+    mode: aiface
+    host: 192.168.1.18
+    port: 80
+    password: ""
+    device_id: panel-01
+    role: combined
+    poll_interval_seconds: 0.2
+    timeout_seconds: 120.0
+    accept_recent_seconds: 15.0
+    live_events_url: http://127.0.0.1:7790/events
+  smarteyes_root: ../smarteyes
+  smarteyes_config: ../smarteyes/configs/clinic_jetson.yaml
+  smarteyes_source: "0"
+  smarteyes_show_window: false
+  smarteyes_strict: true
+  sloan_root: ../sloan_stt
+  min_confidence_demo: 0.55
+  min_confidence_confirm: 0.55
+  sloan_min_margin: 0.05

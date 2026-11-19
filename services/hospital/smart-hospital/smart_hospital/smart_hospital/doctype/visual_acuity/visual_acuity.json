@@ -1,0 +1,140 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-07-24 15:37:42.766763",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_wtox",
+  "vision_measurement",
+  "session_id",
+  "right_score",
+  "left_score",
+  "both_score",
+  "measurement_summary",
+  "result_payload",
+  "section_letters",
+  "letters",
+  "raw_trials_json"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_wtox",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "vision_measurement",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Vision Measurement",
+   "options": "Vision Measurement",
+   "reqd": 1
+  },
+  {
+   "fieldname": "session_id",
+   "fieldtype": "Data",
+   "label": "Phiên đo từ Jetson",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "right_score",
+   "fieldtype": "Data",
+   "label": "\u0110i\u1ec3m m\u1eaft ph\u1ea3i"
+  },
+  {
+   "fieldname": "left_score",
+   "fieldtype": "Data",
+   "label": "\u0110i\u1ec3m m\u1eaft tr\u00e1i"
+  },
+  {
+   "fieldname": "both_score",
+   "fieldtype": "Data",
+   "label": "\u0110i\u1ec3m c\u1ea3 hai m\u1eaft"
+  },
+  {
+   "fieldname": "measurement_summary",
+   "fieldtype": "HTML",
+   "label": "Thông tin đo thị lực"
+  },
+  {
+   "fieldname": "result_payload",
+   "fieldtype": "Long Text",
+   "label": "Dữ liệu kết quả gốc (JSON)",
+   "hidden": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_letters",
+   "fieldtype": "Section Break",
+   "label": "Letters tested"
+  },
+  {
+   "description": "Expected vs spoken letter for each optotype shown during the exam.",
+   "fieldname": "letters",
+   "fieldtype": "Table",
+   "label": "Letter trials",
+   "options": "Visual Acuity Letter"
+  },
+  {
+   "fieldname": "raw_trials_json",
+   "fieldtype": "Code",
+   "hidden": 1,
+   "label": "Raw trials JSON",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-06 09:35:00.000000",
+ "modified_by": "Administrator",
+ "module": "Smart Hospital",
+ "name": "Visual Acuity",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Physician",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 0,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Nursing User",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

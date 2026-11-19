@@ -1,0 +1,181 @@
+# Full clinic vision-test demo (Jetson + camera). Not auto-mock.
+# start_station.sh uses this by default.
+station_id: station-01
+
+# Defaults = VPS Tailscale. start_station.sh / lab.env override via
+# VPS_HOST, HOSPITAL_BASE_URL, MEDIA_BASE_URL, FACE_VECTORDB_BASE_URL.
+# MQTT stays on VPS :1883 (no Mac bridge).
+mqtt:
+  host: 100.113.176.38
+  port: 1883
+  username: "vision"
+  password: ""
+  keepalive: 60
+
+hospital:
+  base_url: https://vision-demo.primetek.ai/
+  timeout_seconds: 10.0
+  api_key: ""
+  api_secret: ""
+
+media:
+  enabled: true
+  base_url: http://100.113.176.38:9010
+  token: ""
+  timeout_seconds: 30.0
+
+# After Face ID identify/enroll: JPEG → media kind=cccd_qr → VPS qr_decode → Frappe
+cccd_qr:
+  enabled: true
+  after_face: true
+
+face_vectordb:
+  enabled: true
+  mode: http
+  base_url: http://100.113.176.38:8100
+  api_key: ""
+  api_key_header: X-Api-Key
+  timeout_seconds: 15.0
+  list_path: /v1/faces
+  get_path: /v1/faces/{enroll_id}
+  image_path: /v1/faces/{enroll_id}/image
+  sync_on_startup: true
+  sync_before_identify: false
+  sync_today_appointments_only: true
+  prune_not_in_today: true
+  sync_today_poll_seconds: 60
+  # Clinic sessions are created by the Frappe appointment Start action.
+  # Keep the walk-in loop from creating a second UUID session that the
+  # appointment's MEA session ID cannot cancel.
+  auto_start_on_face: false
+  overnight_wipe_enabled: true
+  overnight_wipe_hour: 0
+  overnight_wipe_minute: 5
+  max_faces: 500
+  device_face_backupnum: 50
+
+face_devices:
+  - id: front-door
+    host: 192.168.1.22
+    role: front_door
+  - id: vision-room
+    host: 192.168.1.18
+    role: vision_room
+
+http:
+  timeout_seconds: 10.0
+
+display:
+  host: 0.0.0.0
+  port: 8088
+  calibration_mode: auto
+  diagonal_inches: 15.6
+  px_per_mm: 4.3364
+  calibration_target_mm: 100.0
+  calibrated_at: "2026-10-20T12:03:14+0700"
+
+protocol:
+  distance_m: 3.8
+  # Snellen/ETDRS-style line: 5 letters, pass if ≥3 correct (≤2 misses).
+  letters_per_row: 5
+  adaptive_row_testing: false
+  # Fast, safe strategy: provisional 2+1 range; only 3/5 verify rows are scored.
+  smart_range_testing: true
+  smart_range_initial_letters: 2
+  smart_range_tiebreak_letters: 1
+  smart_verify_letters: 5
+  max_letter_replacements: 1
+  left_eye_start_easier_steps: 1
+  snellen_stop_on_fail: true
+  max_misses: 2
+  letter_uncertain_threshold: 0.4
+  letter_accept_threshold: 0.7
+  letter_timeout_seconds: 15
+  same_size_retries: 0
+  staircase: true
+  # Thang thập phân của bệnh viện: 1/10 … 10/10.
+  start_logmar: 0.69897
+  logmar_step: 0.1
+  row_logmars:
+    - 1.0       # 1/10
+    - 0.69897   # 2/10
+    - 0.52288   # 3/10
+    - 0.39794   # 4/10
+    - 0.30103   # 5/10
+    - 0.22185   # 6/10
+    - 0.15490   # 7/10
+    - 0.09691   # 8/10
+    - 0.04576   # 9/10
+    - 0.0       # 10/10
+  # Binary 2+1 range needs at most ~4 rows, followed by candidate + one
+  # easier 3/5 verification. This is a final safety bound, not a retry loop.
+  max_rows_per_eye: 8
+  readiness_timeout_seconds: 180.0
+  # Model A only; a confidence in [0.45, 0.75] receives one new glyph.
+  letter_chunk_seconds: 3.0
+  tablet_chunk_seconds: 10.0
+  start_from_age_norm: true
+  row_search: binary
+  demo_mode: false
+  allow_step_skip: true
+
+ui:
+  patient_flow: speaker_v1
+  input_mode: tablet
+  input_mode_choice_seconds: 15.0
+  # Off: TV keeps VN stand/cover copy. CV coaching still runs (gate + /preview HUD).
+  chart_cv_coaching: false
+
+# auto: Patient.sex Male → vi/female/; Female → vi/male/; unknown → vi/male/.
+# male | female selects scenarios/vi/{male|female}/<clip>.wav (Frappe can also force).
+voice:
+  gender: auto
+
+# input/output device = Yealink BT51 USB dongle on the Jetson (not chart browser).
+audio:
+  input: device
+  output: sounddevice
+  input_device: Yealink
+  output_device: Yealink
+  prompts_dir: display/prompts/vi
+
+paths:
+  dmn: dmn/acuity_flow.dmn
+  scenarios: scenarios/vi/manifest.yaml
+  journals: data/journals
+
+bridges:
+  readiness: smarteyes
+  # Sloan STT and the persistent Yealink microphone stream both run on Jetson.
+  stt: sloan
+  face:
+    mode: aiface
+    host: 192.168.1.27
+    port: 80
+    callback_host: 192.168.1.125
+    callback_port: 7788
+    password: ""
+    device_id: panel-01
+    role: combined
+    poll_interval_seconds: 0.2
+    timeout_seconds: 120.0
+    accept_recent_seconds: 15.0
+    live_events_url: http://127.0.0.1:7790/events
+  smarteyes_root: ../smarteyes
+  smarteyes_config: ../smarteyes/configs/clinic_jetson.yaml
+  smarteyes_source: "C270 HD WEBCAM"
+  smarteyes_show_window: false
+  # Operator /preview ON/OFF. false = no MJPEG/render at boot (saves Jetson CPU).
+  smarteyes_preview_enabled: false
+  smarteyes_strict: true
+  sloan_root: ../sloan_stt
+  min_confidence_demo: 0.55
+  # Empty = Jetson sounddevice (Yealink). Mac :8092 is no longer the clinic mic.
+  sloan_audio_url: ""
+  sloan_audio_sample_rate: 16000
+  sloan_energy_threshold: 0.018
+  sloan_silence_duration: 0.10
+  sloan_min_margin: 0.05
+  sloan_min_voiced_seconds: 0.15
+  sloan_vad_padding_seconds: 0.12
+  sloan_class_confidence_thresholds: {}

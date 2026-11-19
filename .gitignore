@@ -1,0 +1,20 @@
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/data/
+**/node_modules/
+*.pyc
+.env
+deploy/env/lab.env
+deploy/env/*.bak
+deploy/vps/mosquitto_passwd
+tmp/
+
+# GitHub rejects regular Git objects larger than 100 MB. These duplicated
+# runtime assets must be provisioned separately or tracked with Git LFS.
+services/assistant_controller/weights/clip/ViT-B-32.pt
+services/smarteyes/weights/clip/ViT-B-32.pt
+
+# Local credentials and database backups
+deploy/env/connection_settings.local.json
+deploy/vps/frappe/backup/

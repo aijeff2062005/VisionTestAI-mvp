@@ -1,0 +1,135 @@
+# Isolated local preview. Build Dockerfile.smart first, then:
+# docker compose -p visioncare-local -f deploy/vps/frappe/compose.local.yml up -d
+x-app: &app
+  image: visiontestai/frappe:local-hospital-split
+  pull_policy: never
+  restart: unless-stopped
+  volumes:
+    - local-sites:/home/frappe/frappe-bench/sites
+    - local-logs:/home/frappe/frappe-bench/logs
+
+services:
+  # Device integrations are not needed to browse the local UI.
+  mqtt:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep infinity"]
+  media:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep infinity"]
+  qr_decode:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep infinity"]
+  frappe-db:
+    image: mariadb:10.6
+    container_name: visioncare-local-db
+    restart: unless-stopped
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--skip-character-set-client-handshake"]
+    environment:
+      MYSQL_ROOT_PASSWORD: local-preview-db
+      MARIADB_ROOT_PASSWORD: local-preview-db
+    volumes: [local-db:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 20s
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  frappe-redis-cache:
+    image: redis:6.2-alpine
+    container_name: visioncare-local-redis-cache
+    restart: unless-stopped
+  frappe-redis-queue:
+    image: redis:6.2-alpine
+    container_name: visioncare-local-redis-queue
+    restart: unless-stopped
+    volumes: [local-redis-queue:/data]
+  frappe-configurator:
+    <<: *app
+    container_name: visioncare-local-configurator
+    restart: "no"
+    entrypoint: ["bash", "-c"]
+    command:
+      - >-
+        ls -1 apps > sites/apps.txt;
+        bench set-config -g db_host frappe-db;
+        bench set-config -gp db_port 3306;
+        bench set-config -g redis_cache "redis://frappe-redis-cache:6379";
+        bench set-config -g redis_queue "redis://frappe-redis-queue:6379";
+        bench set-config -g redis_socketio "redis://frappe-redis-queue:6379";
+        bench set-config -gp socketio_port 9000;
+    depends_on:
+      frappe-db: {condition: service_healthy}
+      frappe-redis-cache: {condition: service_started}
+      frappe-redis-queue: {condition: service_started}
+  frappe-create-site:
+    <<: *app
+    container_name: visioncare-local-create-site
+    restart: "no"
+    entrypoint: ["/usr/local/bin/visiontestai-provision-sites"]
+    environment:
+      FRAPPE_ADMIN_PASSWORD: local-preview-admin
+      FRAPPE_DB_ROOT_PASSWORD: local-preview-db
+      TRUNG_VUONG_SITE_HOST: tv.localhost
+      QUAN_Y_SITE_HOST: qy.localhost
+      MQTT_USERNAME: vision
+      MQTT_PASSWORD: local-preview
+      STATION_ID: local-station
+      MEDIA_TOKEN: local-preview
+    depends_on:
+      frappe-configurator: {condition: service_completed_successfully}
+      mqtt: {condition: service_started}
+      media: {condition: service_started}
+      qr_decode: {condition: service_started}
+  frappe-backend:
+    <<: *app
+    container_name: visioncare-local-backend
+    depends_on:
+      frappe-create-site: {condition: service_completed_successfully}
+  frappe-websocket:
+    <<: *app
+    container_name: visioncare-local-websocket
+    command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
+    environment:
+      FRAPPE_REDIS_CACHE: redis://frappe-redis-cache:6379
+      FRAPPE_REDIS_QUEUE: redis://frappe-redis-queue:6379
+    depends_on:
+      frappe-create-site: {condition: service_completed_successfully}
+  frappe-queue-short:
+    <<: *app
+    container_name: visioncare-local-queue-short
+    command: ["bench", "worker", "--queue", "short,default"]
+    depends_on:
+      frappe-create-site: {condition: service_completed_successfully}
+  frappe-queue-long:
+    <<: *app
+    container_name: visioncare-local-queue-long
+    command: ["bench", "worker", "--queue", "long,default,short"]
+    depends_on:
+      frappe-create-site: {condition: service_completed_successfully}
+  frappe-scheduler:
+    <<: *app
+    container_name: visioncare-local-scheduler
+    command: ["bench", "schedule"]
+    depends_on:
+      frappe-create-site: {condition: service_completed_successfully}
+  frappe-frontend:
+    <<: *app
+    container_name: visioncare-local-frontend
+    command: ["nginx-entrypoint.sh"]
+    environment:
+      BACKEND: frappe-backend:8000
+      FRAPPE_SITE_NAME_HEADER: $$host
+      SOCKETIO: frappe-websocket:9000
+      UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
+      UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
+      UPSTREAM_REAL_IP_RECURSIVE: "off"
+      PROXY_READ_TIMEOUT: "120"
+      CLIENT_MAX_BODY_SIZE: 50m
+    ports: ["8002:8080"]
+    depends_on: [frappe-backend, frappe-websocket]
+
+volumes:
+  local-sites: {name: visioncare-local-sites-v3}
+  local-logs: {name: visioncare-local-logs-v3}
+  local-db: {name: visioncare-local-db-v3}
+  local-redis-queue: {name: visioncare-local-redis-queue-v3}

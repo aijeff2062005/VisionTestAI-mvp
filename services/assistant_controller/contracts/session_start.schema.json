@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://visiontestai.local/contracts/session_start.schema.json",
+  "title": "SessionStart",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "session_id",
+    "patient_id",
+    "exam_type",
+    "callback_url"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "0.1.0"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "patient_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "patient_name": {"type": ["string", "null"]},
+    "dob": {"type": ["string", "null"]},
+    "sex": {"type": ["string", "null"]},
+    "queue_number": {
+      "type": "string"
+    },
+    "exam_type": {
+      "type": "string",
+      "enum": ["distance_acuity_5m"]
+    },
+    "eyes": {
+      "type": "string",
+      "enum": ["both", "left", "right"],
+      "default": "both"
+    },
+    "callback_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "locale": {
+      "type": "string",
+      "default": "vi-VN"
+    },
+    "face_image_ref": {
+      "type": ["string", "null"],
+      "description": "Reserved for face gate (deferred)"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>VisionAgent</AssemblyName>
+    <RootNamespace>VisionAgent</RootNamespace>
+    <ApplicationIcon>Assets\vision-agent.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\vision-agent.png" />
+    <Resource Include="Assets\vision-agent.ico" />
+    <EmbeddedResource Include="Assets\ReportTemplate.html" LogicalName="VisionAgent.ReportTemplate.html" />
+    <EmbeddedResource Include="Assets\hospital-logo.png" LogicalName="VisionAgent.hospital-logo.png" />
+  </ItemGroup>
+</Project>

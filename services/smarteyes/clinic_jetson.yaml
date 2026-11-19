@@ -1,0 +1,88 @@
+# Jetson clinic camera readiness — stand + eyes (headphones off).
+# Tuned for CPU YOLO (Jetson torch CUDA wheel mismatch) — keep latency low.
+
+model:
+  weights: yolov8n.pt
+  conf_threshold: 0.40
+  iou_threshold: 0.5
+  person_class_id: 0
+  detect_every_n_frames: 4
+  imgsz: 320
+  detect_in_zone: true
+
+pose:
+  min_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+  model_complexity: 0
+  bbox_expand_ratio: 0.1
+  # Reuse pose between YOLO ticks (big CPU win)
+  estimate_every_n_frames: 4
+
+line:
+  mode: fixed
+  floor_hsv_low: [0, 0, 130]
+  floor_hsv_high: [179, 60, 255]
+  min_area: 2500
+  min_floor_area_ratio: 0.035
+  search_roi: [0.20, 0.45, 0.90, 1.0]
+  morph_kernel: 7
+  erode_iters: 1
+  dilate_iters: 2
+  fixed_polygon:
+    - [0.28, 0.98]
+    - [0.90, 0.98]
+    - [0.78, 0.48]
+    - [0.36, 0.48]
+  hsv_low: [18, 80, 80]
+  hsv_high: [45, 255, 255]
+  hsv_low2: [40, 60, 60]
+  hsv_high2: [90, 255, 255]
+  band_margin_px: 40
+  min_length_px: 80
+  bottom_roi_ratio: 0.58
+
+headphones:
+  backend: yolo
+  weights: weights/headphones_over_ear.pt
+  conf_threshold: 0.30
+  imgsz: 320
+  detect_every_n_frames: 8
+  require_on_head: true
+
+eye_cover:
+  enabled: true
+  detect_every_n_frames: 3
+  ear_closed_threshold: 0.14
+  cover_score_threshold: 0.55
+  partial_cover_threshold: 0.40
+  open_iris_min: 0.22
+  asymmetry_min: 0.12
+  min_eye_px: 22
+  bbox_expand_ratio: 0.25
+
+rules:
+  hold_seconds: 1.0
+  require_single_person: true
+  require_both_ankles: false
+
+video:
+  width: 1280
+  height: 720
+  fps: 20
+  mirror: true
+
+pipeline:
+  source: C270
+  output_dir: outputs
+  log_interval_frames: 30
+  max_smoke_frames: 60
+
+checks:
+  stand: true
+  headphones: false
+  eyes: true
+
+spell:
+  enabled: false
+  # Resolved automatically to services/sloan_stt; override only if needed
+  sloan_root: ../sloan_stt

@@ -1,0 +1,47 @@
+# Jetson clinic stack (host network for AiFace panel + chart)
+# VPS hospital APIs: 103.249.117.203
+#
+#   docker compose --env-file ../env/lab.env -p visiontestai-station up -d --build
+# Select Quân y direct-start with AC_CONFIG=/app/configs/qy_vision_hospital.yaml.
+#
+# Prefer start_station.sh if camera/GUI is awkward in Docker.
+
+name: visiontestai-station
+
+services:
+  aiface-bs:
+    build:
+      context: ../../services/hospital/hospital_api
+      dockerfile: Dockerfile.aiface_bs
+    container_name: visiontestai-aiface-bs
+    network_mode: host
+    restart: unless-stopped
+    mem_limit: 512m
+
+  assistant-controller:
+    build:
+      context: ../../services/assistant_controller
+      dockerfile: Dockerfile
+    container_name: visiontestai-ac
+    network_mode: host
+    restart: unless-stopped
+    env_file:
+      - ../env/lab.env
+    environment:
+      FACE_HOST: ${AIFACE_PANEL_IP:-192.168.1.18}
+      FACE_PORT: ${AIFACE_PANEL_PORT:-80}
+      FACE_VECTORDB_BASE_URL: ${FACE_VECTORDB_BASE_URL:-http://${VPS_HOST:-103.249.117.203}:8100}
+      FACE_VECTORDB_API_KEY: ${FACE_VDB_API_KEY:-dev-face-vdb-key}
+    command: ["sh", "-c", "python -m ac.main --config \"$${AC_CONFIG:-/app/configs/clinic.yaml}\" --mqtt-optional"]
+    volumes:
+      - ../../services/assistant_controller/configs:/app/configs:ro
+      - ../../services/assistant_controller/scenarios:/app/scenarios:ro
+      - ../../services/assistant_controller/display:/app/display:ro
+      - ../../services/assistant_controller/dmn:/app/dmn:ro
+      - ac-journals:/app/data/journals
+    depends_on:
+      - aiface-bs
+    mem_limit: 2g
+
+volumes:
+  ac-journals:

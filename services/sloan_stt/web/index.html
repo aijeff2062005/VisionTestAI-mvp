@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>SLOAN STT v2</title>
+        <style>
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+            body {
+                margin: 0;
+                background: #f6f8fb;
+                color: #111;
+                font:
+                    15px Arial,
+                    sans-serif;
+            }
+            .shell {
+                width: min(1120px, calc(100% - 36px));
+                height: 100%;
+                box-sizing: border-box;
+                margin: auto;
+                padding: 24px 0;
+                overflow: hidden;
+            }
+            .top {
+                display: flex;
+                justify-content: space-between;
+                align-items: end;
+                margin-bottom: 18px;
+            }
+            .eyebrow {
+                color: #1557e8;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                font-size: 12px;
+                text-transform: uppercase;
+            }
+            .title {
+                font-size: 36px;
+                margin: 8px 0;
+                letter-spacing: -0.04em;
+            }
+            .sub,
+            .status,
+            .details {
+                color: #687384;
+            }
+            .actions {
+                display: flex;
+                gap: 8px;
+            }
+            button,
+            select {
+                border: 1px solid #d9dee7;
+                border-radius: 10px;
+                background: white;
+                padding: 12px 16px;
+                font-weight: 700;
+                cursor: pointer;
+            }
+            button.primary {
+                background: #1557e8;
+                color: white;
+                border-color: #1557e8;
+            }
+            button:disabled {
+                opacity: 0.45;
+            }
+            .status {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .dot {
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                background: #aab2bd;
+            }
+            .dot.live {
+                background: #e04d4d;
+                box-shadow: 0 0 0 6px #e04d4d20;
+            }
+            .layout {
+                display: grid;
+                grid-template-columns: 1fr 260px;
+                gap: 16px;
+                margin-top: 14px;
+            }
+            .chart,
+            .side,
+            .results {
+                background: white;
+                border: 1px solid #dfe4eb;
+                border-radius: 16px;
+                box-shadow: 0 16px 40px #18283b10;
+            }
+            .chart {
+                min-height: 380px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+            .letters {
+                font:
+                    900 clamp(76px, 10vw, 160px)/1 "Arial Black",
+                    Arial,
+                    sans-serif;
+                letter-spacing: 0.1em;
+                white-space: nowrap;
+            }
+            .side,
+            .results {
+                padding: 22px;
+            }
+            .side h2 {
+                font-size: 13px;
+                letter-spacing: 0.1em;
+                color: #687384;
+                text-transform: uppercase;
+                margin: 0;
+            }
+            .target,
+            .heard {
+                font-weight: 800;
+                letter-spacing: 0.12em;
+            }
+            .target {
+                font-size: 26px;
+                margin: 20px 0;
+            }
+            .heard {
+                font-size: 28px;
+                margin: 18px 0;
+            }
+            .heard-token {
+                border: 0;
+                border-bottom: 2px solid transparent;
+                background: transparent;
+                padding: 0 4px;
+                color: inherit;
+                font: inherit;
+            }
+            .heard-token.uncertain {
+                color: #c87912;
+                border-bottom-color: #c87912;
+                cursor: pointer;
+            }
+            .progress {
+                display: flex;
+                gap: 6px;
+            }
+            .step {
+                height: 7px;
+                flex: 1;
+                background: #e5e9ef;
+                border-radius: 8px;
+            }
+            .step.done {
+                background: #169064;
+            }
+            .step.unknown {
+                background: #dda23a;
+            }
+            .results {
+                margin-top: 16px;
+            }
+            .hint {
+                margin-top: 18px;
+                padding: 13px;
+                background: #f5f7f9;
+                border-radius: 10px;
+                color: #69717d;
+                font-size: 13px;
+                line-height: 1.5;
+            }
+            .details {
+                border-top: 1px solid #e2e6ec;
+                padding-top: 12px;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+            .error {
+                color: #c44747;
+            }
+            @media (max-width: 720px) {
+                .shell {
+                    width: calc(100% - 24px);
+                    height: auto;
+                    padding: 18px 0;
+                }
+                .top {
+                    display: block;
+                }
+                .actions {
+                    margin-top: 16px;
+                    flex-wrap: wrap;
+                }
+                .layout {
+                    grid-template-columns: 1fr;
+                }
+                .chart {
+                    min-height: 250px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main class="shell">
+            <header class="top">
+                <div>
+                    <div class="eyebrow">Sloan vision check</div>
+                </div>
+                <div class="actions">
+                    <select id="head" title="Classifier head">
+                        <option value="sloan">Sloan</option>
+                        <option value="three_labels">3 nhóm</option>
+                        <option value="both">Cả hai</option>
+                    </select>
+                    <button id="new">Đổi bảng</button>
+                    <button id="start" class="primary">Bật mic</button>
+                    <button id="stop" disabled>Tắt mic</button>
+                </div>
+            </header>
+
+            <div class="status">
+                <span id="dot" class="dot"></span>
+                <span id="status">Sẵn sàng</span>
+            </div>
+
+            <section class="layout">
+                <div class="chart">
+                    <div id="target" class="letters">-----</div>
+                </div>
+                <aside class="side">
+                    <h2>Mục tiêu</h2>
+                    <div id="targetText" class="target">-</div>
+                    <div class="status">Tiến độ</div>
+                    <div id="progress" class="progress">
+                        <i class="step"></i><i class="step"></i
+                        ><i class="step"></i><i class="step"></i
+                        ><i class="step"></i>
+                    </div>
+                    <div class="hint">
+                        Có thể đọc thêm “chữ” trước mỗi ký tự. Nếu model ra
+                        class <b>X</b> thì bảng sẽ tự đổi.
+                    </div>
+                </aside>
+            </section>
+
+            <section class="results">
+                <b>Chuỗi nghe được</b>
+                <span id="count" class="status" style="float: right"
+                    >0 / 5</span
+                >
+                <div id="heard" class="heard">-</div>
+                <div id="details" class="details">Chưa có kết quả.</div>
+            </section>
+        </main>
+
+        <script>
+            const $ = (id) => document.getElementById(id);
+            const POOL = ["C", "D", "H", "K", "N", "O", "R", "S", "V", "Z"];
+
+            let target = [];
+            let sequence = [];
+            let candidateSets = [];
+            let ctx;
+            let stream;
+            let source;
+            let highpass;
+            let lowpass;
+            let inputGain;
+            let muteGain;
+            let processor;
+            let listening = false;
+            let active = false;
+            let buffers = [];
+            let pre = [];
+            let silence = 0;
+            let activeSamples = 0;
+            let rate = 44100;
+            let noiseFloor = 0.0025;
+            let onsetChunks = 0;
+            let voicedChunks = 0;
+            let totalChunks = 0;
+            let sendQueue = Promise.resolve();
+
+            const MIN_THRESHOLD = 0.004;
+            const NOISE_MULTIPLIER = 2.2;
+            const END_SECONDS = 0.14;
+            const MIN_AUDIO_SECONDS = 0.16;
+            const MIN_VOICED_CHUNKS = 3;
+            const MIN_VOICED_RATIO = 0.35;
+            const MAX_ACTIVE_SECONDS = 2.8;
+
+            function status(text, isError = false) {
+                $("status").textContent = text;
+                $("status").classList.toggle("error", isError);
+                $("dot").classList.toggle("live", listening);
+            }
+
+            function threshold() {
+                return Math.max(MIN_THRESHOLD, noiseFloor * NOISE_MULTIPLIER);
+            }
+
+            function resetBoard() {
+                target = [...POOL].sort(() => Math.random() - 0.5).slice(0, 5);
+                sequence = [];
+                candidateSets = [];
+                $("target").textContent = target.join("");
+                $("targetText").textContent = target.join(" ");
+                render();
+            }
+
+            function topkText(index) {
+                const items = candidateSets[index] || [];
+                return items.length
+                    ? items
+                          .map(
+                              (item) =>
+                                  `${item.label}:${Number(item.confidence ?? 0).toFixed(3)}`,
+                          )
+                          .join("  ")
+                    : "-";
+            }
+
+            function alignToTarget(observed) {
+                const clean = observed
+                    .map((label, index) => ({
+                        label,
+                        candidates: (candidateSets[index] || []).map((item) =>
+                            typeof item === "string" ? item : item.label,
+                        ),
+                    }))
+                    .filter(
+                        (item) =>
+                            !["[UNK]", "[UNC]", "UNKNOWN", "CHU"].includes(
+                                item.label,
+                            ),
+                    );
+
+                if (!clean.length) {
+                    return {
+                        letters: observed,
+                        score: Infinity,
+                        corrected: false,
+                    };
+                }
+
+                if (clean.length < target.length) {
+                    return {
+                        letters: clean.map((item) => item.label),
+                        score: 0,
+                        corrected: false,
+                    };
+                }
+
+                const m = clean.length;
+                const n = target.length;
+                const dp = Array.from({ length: m + 1 }, () =>
+                    Array(n + 1).fill(0),
+                );
+
+                for (let i = 1; i <= m; i++) {
+                    dp[i][0] = dp[i - 1][0] + 0.85;
+                }
+                for (let j = 1; j <= n; j++) {
+                    dp[0][j] = dp[0][j - 1] + 0.65;
+                }
+
+                for (let i = 1; i <= m; i++) {
+                    for (let j = 1; j <= n; j++) {
+                        const same = clean[i - 1].label === target[j - 1];
+                        const inTopK = clean[i - 1].candidates.includes(
+                            target[j - 1],
+                        );
+                        dp[i][j] = Math.min(
+                            dp[i - 1][j - 1] + (same ? 0 : inTopK ? 0.25 : 1.5),
+                            dp[i - 1][j] + 0.85,
+                            dp[i][j - 1] + 0.65,
+                        );
+                    }
+                }
+
+                const aligned = [];
+                const matches = [];
+                let i = m;
+                let j = n;
+
+                while (j > 0) {
+                    if (i > 0 && j > 0) {
+                        const same = clean[i - 1].label === target[j - 1];
+                        const inTopK = clean[i - 1].candidates.includes(
+                            target[j - 1],
+                        );
+                        const diagonal =
+                            dp[i - 1][j - 1] + (same ? 0 : inTopK ? 0.25 : 1.5);
+
+                        if (Math.abs(dp[i][j] - diagonal) < 1e-6) {
+                            aligned.unshift(
+                                same || inTopK
+                                    ? target[j - 1]
+                                    : clean[i - 1].label,
+                            );
+                            matches.unshift(same || inTopK);
+                            i--;
+                            j--;
+                            continue;
+                        }
+                    }
+
+                    aligned.unshift("-");
+                    matches.unshift(false);
+                    j--;
+                }
+
+                return {
+                    letters: aligned,
+                    score: dp[m][n],
+                    corrected: !matches.every(Boolean),
+                };
+            }
+
+            function render() {
+                const aligned = alignToTarget(sequence);
+                const display =
+                    aligned.score <= 1.8 ? aligned.letters : sequence;
+                $("heard").replaceChildren();
+                if (!display.length) {
+                    $("heard").textContent = "-";
+                } else {
+                    display.forEach((label, index) => {
+                        const original = sequence[index];
+                        const uncertain =
+                            original === "[UNK]" || original === "[UNC]";
+                        const token = document.createElement(
+                            uncertain ? "button" : "span",
+                        );
+                        token.className = `heard-token${uncertain ? " uncertain" : ""}`;
+                        token.textContent = uncertain ? "[UNC]" : label;
+                        if (uncertain) {
+                            token.title = "Bấm để xem top-k";
+                            token.onclick = () => {
+                                $("details").textContent =
+                                    `Token ${index + 1} · top-k ${topkText(index)}`;
+                            };
+                        }
+                        $("heard").append(token, " ");
+                    });
+                }
+                $("count").textContent = `${Math.min(display.length, 5)} / 5`;
+
+                [...$("progress").children].forEach((node, index) => {
+                    node.className =
+                        "step " +
+                        (display[index] === "[UNK]" ||
+                        display[index] === "UNKNOWN"
+                            ? "unknown"
+                            : display[index]
+                              ? "done"
+                              : "");
+                });
+            }
+
+            function merge(chunks) {
+                const merged = new Float32Array(
+                    chunks.reduce((total, chunk) => total + chunk.length, 0),
+                );
+                let offset = 0;
+                chunks.forEach((chunk) => {
+                    merged.set(chunk, offset);
+                    offset += chunk.length;
+                });
+                return merged;
+            }
+
+            function wav(audio, sampleRate) {
+                const buffer = new ArrayBuffer(44 + audio.length * 2);
+                const view = new DataView(buffer);
+                const write = (offset, text) => {
+                    [...text].forEach((char, index) =>
+                        view.setUint8(offset + index, char.charCodeAt(0)),
+                    );
+                };
+
+                write(0, "RIFF");
+                view.setUint32(4, 36 + audio.length * 2, true);
+                write(8, "WAVE");
+                write(12, "fmt ");
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true);
+                view.setUint16(22, 1, true);
+                view.setUint32(24, sampleRate, true);
+                view.setUint32(28, sampleRate * 2, true);
+                view.setUint16(32, 2, true);
+                view.setUint16(34, 16, true);
+                write(36, "data");
+                view.setUint32(40, audio.length * 2, true);
+
+                for (let i = 0; i < audio.length; i++) {
+                    view.setInt16(
+                        44 + i * 2,
+                        Math.max(-1, Math.min(1, audio[i])) * 32767,
+                        true,
+                    );
+                }
+
+                return new Blob([buffer], { type: "audio/wav" });
+            }
+
+            async function send(audio) {
+                if (audio.length / rate < MIN_AUDIO_SECONDS) {
+                    return;
+                }
+
+                status("Đang nhận diện...");
+                const form = new FormData();
+                form.append("audio", wav(audio, rate), "segment.wav");
+
+                const selectedHead = $("head").value;
+                const response = await fetch(
+                    `/api/classify?min_confidence=0.55&min_margin=0.05&head=${selectedHead}`,
+                    {
+                        method: "POST",
+                        body: form,
+                    },
+                );
+                const payload = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(payload.detail || "API error");
+                }
+
+                const data = selectedHead === "both" ? payload.sloan : payload;
+                const threeLabels = selectedHead === "both"
+                    ? payload.three_labels
+                    : selectedHead === "three_labels" ? payload : null;
+
+                if (data.prediction === "X") {
+                    $("details").textContent =
+                        `raw=${data.raw} · confidence=${Number(data.confidence ?? 0).toFixed(3)} · margin=${Number(data.margin ?? 0).toFixed(3)} · top-k ${Array.isArray(data.topk) ? data.topk.map((item) => item.label + ":" + Number(item.confidence ?? 0).toFixed(2)).join(" ") : "-"}`;
+                    resetBoard();
+                    status("Đã nhận lớp X · đã đổi bảng");
+                    return;
+                }
+
+                const uncertain = !data.reliable || data.prediction === "[UNK]";
+                sequence.push(
+                    uncertain ? "[UNC]" : data.prediction || data.raw,
+                );
+                candidateSets.push(Array.isArray(data.topk) ? data.topk : []);
+
+                $("details").textContent =
+                    `raw=${data.raw} · confidence=${Number(data.confidence ?? 0).toFixed(3)} · margin=${Number(data.margin ?? 0).toFixed(3)} · top-k ${Array.isArray(data.topk) ? data.topk.map((item) => item.label + ":" + Number(item.confidence ?? 0).toFixed(2)).join(" ") : "-"}`
+                    + (threeLabels && selectedHead === "both"
+                        ? ` · 3 nhóm=${threeLabels.prediction} (${Number(threeLabels.confidence ?? 0).toFixed(3)}) · chi tiết=${threeLabels.detail}`
+                        : "");
+
+                render();
+                status(listening ? "Đang nghe · chờ giọng nói..." : "Sẵn sàng");
+            }
+
+            function enqueue(audio) {
+                sendQueue = sendQueue
+                    .then(() => send(audio))
+                    .catch((error) => {
+                        status(error.message, true);
+                    });
+                return sendQueue;
+            }
+
+            async function start() {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                    });
+                    ctx = new (
+                        window.AudioContext || window.webkitAudioContext
+                    )();
+                    rate = ctx.sampleRate;
+
+                    source = ctx.createMediaStreamSource(stream);
+                    highpass = ctx.createBiquadFilter();
+                    highpass.type = "highpass";
+                    highpass.frequency.value = 80;
+                    highpass.Q.value = 0.7;
+
+                    lowpass = ctx.createBiquadFilter();
+                    lowpass.type = "lowpass";
+                    lowpass.frequency.value = 3400;
+                    lowpass.Q.value = 0.7;
+
+                    inputGain = ctx.createGain();
+                    inputGain.gain.value = 1.2;
+
+                    // Smaller buffers reduce VAD and UI latency between letters.
+                    processor = ctx.createScriptProcessor(2048, 1, 1);
+
+                    listening = true;
+                    active = false;
+                    buffers = [];
+                    pre = [];
+                    silence = 0;
+                    activeSamples = 0;
+                    noiseFloor = 0.0025;
+                    onsetChunks = 0;
+                    voicedChunks = 0;
+                    totalChunks = 0;
+
+                    processor.onaudioprocess = (event) => {
+                        if (!listening) {
+                            return;
+                        }
+
+                        const chunk = new Float32Array(
+                            event.inputBuffer.getChannelData(0),
+                        );
+                        const rms = Math.sqrt(
+                            chunk.reduce(
+                                (sum, value) => sum + value * value,
+                                0,
+                            ) / chunk.length,
+                        );
+                        const gate = threshold();
+
+                        if (!active) {
+                            if (rms < gate) {
+                                noiseFloor = noiseFloor * 0.95 + rms * 0.05;
+                            }
+                            pre = [...pre, chunk].slice(-3);
+                            onsetChunks = rms >= gate ? onsetChunks + 1 : 0;
+
+                            if (onsetChunks >= 2) {
+                                active = true;
+                                buffers = [...pre];
+                                silence = 0;
+                                activeSamples = buffers.reduce(
+                                    (sum, current) => sum + current.length,
+                                    0,
+                                );
+                                voicedChunks = onsetChunks;
+                                totalChunks = pre.length;
+                            }
+                        } else {
+                            buffers.push(chunk);
+                            activeSamples += chunk.length;
+                            totalChunks += 1;
+                            if (rms >= gate) {
+                                voicedChunks += 1;
+                                silence = 0;
+                            } else {
+                                silence += chunk.length;
+                            }
+
+                            if (
+                                silence >= rate * END_SECONDS ||
+                                activeSamples >= rate * MAX_ACTIVE_SECONDS
+                            ) {
+                                const audio = merge(buffers);
+                                const duration = audio.length / rate;
+                                const voicedRatio =
+                                    voicedChunks / Math.max(1, totalChunks);
+
+                                active = false;
+                                buffers = [];
+                                pre = [];
+                                silence = 0;
+                                activeSamples = 0;
+                                onsetChunks = 0;
+                                totalChunks = 0;
+
+                                if (
+                                    duration >= MIN_AUDIO_SECONDS &&
+                                    voicedChunks >= MIN_VOICED_CHUNKS &&
+                                    voicedRatio >= MIN_VOICED_RATIO
+                                ) {
+                                    enqueue(audio);
+                                } else {
+                                    status(
+                                        `Bỏ qua nhiễu/ngắn (rms ${rms.toFixed(3)} / ngưỡng ${gate.toFixed(3)})`,
+                                    );
+                                }
+
+                                voicedChunks = 0;
+                            }
+                        }
+
+                        if (active && listening) {
+                            status(
+                                `Đang thu đoạn (rms ${rms.toFixed(3)} / ngưỡng ${gate.toFixed(3)} / ${(activeSamples / rate).toFixed(2)}s)`,
+                            );
+                        } else if (listening) {
+                            status(
+                                `Đang nghe · chờ nói (rms ${rms.toFixed(3)} / ngưỡng ${gate.toFixed(3)})`,
+                            );
+                        }
+                    };
+
+                    source.connect(highpass);
+                    highpass.connect(lowpass);
+                    lowpass.connect(inputGain);
+                    inputGain.connect(processor);
+
+                    muteGain = ctx.createGain();
+                    muteGain.gain.value = 0;
+                    processor.connect(muteGain);
+                    muteGain.connect(ctx.destination);
+
+                    $("start").disabled = true;
+                    $("stop").disabled = false;
+                    status("Đang nghe · chờ giọng nói...");
+                } catch (error) {
+                    status(error.message, true);
+                }
+            }
+
+            async function stop() {
+                listening = false;
+
+                if (active && buffers.length) {
+                    await enqueue(merge(buffers));
+                }
+
+                if (processor) processor.disconnect();
+                if (muteGain) muteGain.disconnect();
+                if (inputGain) inputGain.disconnect();
+                if (lowpass) lowpass.disconnect();
+                if (highpass) highpass.disconnect();
+                if (source) source.disconnect();
+                if (stream) stream.getTracks().forEach((track) => track.stop());
+                if (ctx) await ctx.close();
+
+                $("start").disabled = false;
+                $("stop").disabled = true;
+                status("Đã tắt mic");
+            }
+
+            $("new").onclick = resetBoard;
+            $("start").onclick = start;
+            $("stop").onclick = stop;
+
+            resetBoard();
+        </script>
+    </body>
+</html>

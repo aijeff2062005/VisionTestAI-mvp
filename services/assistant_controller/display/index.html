@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kiểm tra thị lực</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preload" as="image" href="/static/art/vitringoi.jpg" type="image/jpeg" />
+  <link rel="preload" as="image" href="/static/art/huongdanquetkhuonmat.jpg" type="image/jpeg" />
+  <link rel="preload" as="image" href="/static/art/domattrai.jpg" type="image/jpeg" />
+  <link rel="preload" as="image" href="/static/art/domatphai.jpg" type="image/jpeg" />
+  <link rel="stylesheet" href="/static/chart.css?v=20261008-cover-photos" />
+</head>
+<body class="exam-mode remote-message instruction-photo-mode face-photo-mode fs-cal-hidden">
+  <main class="app">
+    <header class="header">
+      <div class="brand">
+        <div class="mark">VA</div>
+        <div>
+          <h1>Màn hình kiểm tra thị lực</h1>
+          <p id="chartSetupSummary">Người lớn · chữ Sloan · đang tải cấu hình màn hình</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" id="btnRandomTop">Random ký tự</button>
+        <button class="btn" id="btnFullscreenTop">Toàn màn hình</button>
+        <button class="btn primary" id="btnExamTop">Bắt đầu đo</button>
+      </div>
+    </header>
+
+    <section class="layout">
+      <aside class="panel">
+        <div class="panel-head">
+          <p class="eyebrow">Thiết lập</p>
+          <h2>Thiết lập phiên đo</h2>
+          <p>Giao diện này ưu tiên màn hình khám sạch, dễ nhìn. Phần chỉ số được tính theo kích thước chữ thật tại 5m.</p>
+        </div>
+
+        <div class="panel-body">
+          <div class="section">
+            <div class="section-title">Hiển thị</div>
+            <div class="segmented" id="modeGroup" aria-label="Chế độ hiển thị">
+              <button data-mode="row" class="active">1 dòng</button>
+              <button data-mode="single">1 ký tự</button>
+              <button data-mode="chart">Bảng</button>
+            </div>
+            <label class="field">
+              <span>Dòng thị lực</span>
+              <select id="rowIndex"></select>
+            </label>
+            <label class="field">
+              <span>Khoảng cách ký tự</span>
+              <select id="spacingFactor">
+                <option value="1" selected>1.0× chiều cao chữ</option>
+                <option value="0.75">0.75× chiều cao chữ</option>
+                <option value="0.6">0.6× chiều cao chữ</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Màn hình bệnh nhân</div>
+            <p>Khoảng cách và đường chéo màn hình được cấu hình tại <a href="/preview">/preview</a>. Độ phân giải chart được nhận tự động từ Jetson.</p>
+          </div>
+
+          <div class="section legacy-calibration">
+            <div class="section-title">Màn hình & calibration</div>
+            <label class="field">
+              <span>Preset màn hình</span>
+              <select id="screenPreset">
+                <option value="5.42" selected>32 inch 4K · ~5.42 px/mm</option>
+                <option value="6.42">27 inch 4K · ~6.42 px/mm</option>
+                <option value="4.28">27 inch QHD · ~4.28 px/mm</option>
+                <option value="3.62">27 inch FHD · ~3.62 px/mm</option>
+                <option value="custom">Custom / đã calibration</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>px/mm thực tế</span>
+              <input id="pxPerMm" type="number" min="1" max="20" step="0.01" value="5.42" />
+              <small>Dùng thanh 100mm bên dưới để đo và hiệu chỉnh lại cho đúng màn hình thực tế.</small>
+            </label>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Thông số hiện tại</div>
+            <div class="stats">
+              <div class="stat"><label>Khoảng cách</label><strong id="mDistance">5m</strong></div>
+              <div class="stat"><label>Thị lực</label><strong id="mAcuity">-</strong></div>
+              <div class="stat"><label>Chỉ số</label><strong id="mLogmar">-</strong></div>
+              <div class="stat"><label>Optotype</label><strong id="mHeightMm">-</strong></div>
+              <div class="stat"><label>Stroke</label><strong id="mStrokeMm">-</strong></div>
+              <div class="stat"><label>Pixel</label><strong id="mHeightPx">-</strong></div>
+              <div class="stat"><label>Rộng dòng</label><strong id="mRowWidth">-</strong></div>
+              <div class="stat"><label>Độ phù hợp</label><strong id="mFit">-</strong></div>
+            </div>
+          </div>
+
+          <div class="notice">
+            <strong>Lưu ý:</strong> chữ Sloan dùng font Optician Sans lưu nội bộ; chiều cao hiển thị được tính theo khoảng cách và đường chéo màn hình đã nhập.
+          </div>
+        </div>
+
+        <div class="panel-foot legacy-calibration">
+          <div class="section-title">Calibration 100mm</div>
+          <div class="calibration-bar-wrap"><div class="calibration-bar" id="calibrationBar"></div></div>
+          <p class="hint" id="calBarHint" style="margin:0;color:var(--muted);font-size:12px">Thanh đen = <strong>100 mm</strong>. Đo hết thanh (cuộn nếu cần), nhập mm đo được, rồi Áp dụng.</p>
+          <label class="field">
+            <span>Độ dài đo được ngoài đời, mm</span>
+            <input id="measuredMm" type="number" min="10" step="0.1" value="100" />
+          </label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" id="btnCalibrate">Áp dụng calibration</button>
+            <button class="btn ghost" id="btnResetCal" type="button">Reset</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="chart-shell">
+        <div class="chart-toolbar">
+          <div class="chart-title">
+            <div class="status-dot"></div>
+            <div>
+              <strong id="chartTitle">Một dòng chữ</strong>
+              <span id="chartSubtitle">5 chữ · 5m</span>
+            </div>
+          </div>
+          <div class="font-status" id="fontStatus">Đang kiểm tra font…</div>
+        </div>
+
+        <div class="chart-area">
+          <div id="listenProgress" class="listen-progress" hidden aria-live="polite">
+            <div id="listenProgressFill" class="listen-progress-fill"></div>
+            <span id="listenProgressText"></span>
+          </div>
+          <div class="exam-card">
+            <div id="chart" class="chart-inner"></div>
+          </div>
+        </div>
+
+        <div class="chart-footer">
+          <div>
+            <span class="kbd">F</span> toàn màn hình
+            <span class="kbd">C</span> chế độ đo
+            <span class="kbd">R</span> ngẫu nhiên
+            <span class="kbd">↑</span><span class="kbd">↓</span> đổi dòng
+          </div>
+          <div id="fitFooter">-</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="remoteOverlay" aria-live="polite">
+    <div class="coach">
+      <div class="coach-art" id="remoteArt" data-scene="face"><img class="instruction-photo" src="/static/art/huongdanquetkhuonmat.jpg" alt="Ảnh hướng dẫn nhìn vào máy nhận diện khuôn mặt"></div>
+      <p class="queue" id="remoteQueue"></p>
+      <h1 class="msg" id="remoteMsg">Nhìn vào máy nhận diện khuôn mặt.</h1>
+      <p class="lead" id="remoteLead" hidden></p>
+      <div class="res-grid" id="remoteResults" hidden></div>
+      <div class="remote-actions" id="remoteActions" hidden></div>
+    </div>
+  </div>
+  <div id="audioUnlock" class="tap-gate">
+    <div class="tap-gate-inner">
+      <button type="button" class="btn primary" id="btnAudioUnlock">Chạm để bật loa</button>
+      <p>Chạm màn hình để bật loa trước khi bắt đầu kiểm tra.</p>
+    </div>
+  </div>
+  <audio id="promptAudio" preload="auto"></audio>
+  <div class="letter-pad" id="letterPad" hidden aria-label="Sloan letter pad"></div>
+  <div class="op-chips" id="opChips">
+    <button type="button" id="btnAudioChip" class="op-chip">Loa</button>
+    <button type="button" id="micChip" class="op-chip" aria-live="polite">Mic</button>
+    <button type="button" id="previewChip" class="op-chip">Preview</button>
+  </div>
+  <button type="button" id="skipFab" class="skip-fab" hidden>Bỏ qua</button>
+  <div id="acStatus">Đang kết nối…</div>
+
+  <aside id="fsCalibrate" class="legacy-calibration" aria-label="Calibration fullscreen">
+    <div class="section-title">Calibration 100mm · fullscreen</div>
+    <div class="calibration-bar-wrap"><div class="calibration-bar" id="calibrationBarFs"></div></div>
+    <p class="hint" id="calBarHintFs">Thanh đen = <strong>100 mm</strong>. Đo cả thanh, nhập mm đo được, rồi Áp dụng. Phím <strong>L</strong> ẩn/hiện.</p>
+    <div class="fs-cal-row">
+      <label class="field" style="margin:0">
+        <span>Đo được (mm)</span>
+        <input id="measuredMmFs" type="number" min="10" step="0.1" value="100" />
+      </label>
+      <div class="fs-cal-actions">
+        <button class="btn primary" id="btnCalibrateFs" type="button">Áp dụng</button>
+        <button class="btn ghost" id="btnResetCalFs" type="button">Reset</button>
+        <button class="btn ghost" id="btnHideFsCal" type="button">Ẩn</button>
+      </div>
+    </div>
+  </aside>
+
+  <script src="/static/chart.js?v=20261026-face-copy" defer></script>
+</body>
+</html>

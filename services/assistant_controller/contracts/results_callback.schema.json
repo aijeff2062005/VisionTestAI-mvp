@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://visiontestai.local/contracts/results_callback.schema.json",
+  "title": "ResultsCallback",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "session_id",
+    "patient_id",
+    "station_id",
+    "exam_type",
+    "completed_at",
+    "acuity",
+    "protocol"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "0.1.0"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "patient_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "patient_name": {
+      "type": ["string", "null"],
+      "description": "Display name from Face ID enroll (demo)"
+    },
+    "face_enroll_id": {
+      "type": ["integer", "null"],
+      "description": "AiFace enroll id when identified via Face ID"
+    },
+    "station_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "exam_type": {
+      "type": "string",
+      "enum": ["distance_acuity_5m"]
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "acuity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "right": { "$ref": "#/$defs/eyeAcuity" },
+        "left": { "$ref": "#/$defs/eyeAcuity" }
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passes_per_eye", "distance_m", "letter_uncertain_threshold", "letter_accept_threshold"],
+      "properties": {
+        "passes_per_eye": { "type": "integer", "minimum": 1 },
+        "distance_m": { "type": "number" },
+        "letter_uncertain_threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "letter_accept_threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "max_misses": { "type": "integer", "minimum": 0 },
+        "letter_timeout_seconds": { "type": "number" },
+        "letter_chunk_seconds": { "type": ["number", "null"] },
+        "letter_protocol": { "type": "string" },
+        "scoring": { "type": "string" }
+      }
+    },
+    "raw_trials": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "vision_measurement": {
+      "type": ["string", "null"],
+      "description": "Hospital Vision Measurement id when created before exam"
+    }
+  },
+  "$defs": {
+    "eyeAcuity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logmar", "decimal", "correct", "total"],
+      "properties": {
+        "logmar": { "type": "number" },
+        "decimal": { "type": "number" },
+        "snellen_approx": { "type": ["string", "null"] },
+        "vn_over_10": {
+          "type": ["string", "null"],
+          "description": "Vietnam thập phân scale, e.g. 8/10",
+          "pattern": "^[0-9]+/10$"
+        },
+        "correct": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 1 },
+        "row_passed": { "type": "boolean" }
+      }
+    }
+  }
+}

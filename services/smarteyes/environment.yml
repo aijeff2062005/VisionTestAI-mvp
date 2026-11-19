@@ -1,0 +1,31 @@
+name: smarteyes
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - numpy>=1.24
+  - opencv>=4.8
+  - pyyaml>=6.0
+  - pip:
+    - ultralytics>=8.0.0
+    - mediapipe==0.10.14
+    - torch
+    - torchvision
+    - torchaudio
+    - tqdm
+    - onnxruntime
+    - sounddevice
+    - soundfile
+    - librosa
+    # Assistant Controller (full demo — install into this env, not .venv)
+    - paho-mqtt>=2.1.0
+    - pydantic>=2.6.0
+    - pydantic-settings>=2.2.0
+    - httpx>=0.27.0
+    - fastapi>=0.111.0
+    - "uvicorn[standard]>=0.30.0"
+    - jsonschema>=4.22.0
+    - pytest>=8.2.0
+    - pytest-asyncio>=0.23.0

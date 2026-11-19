@@ -1,0 +1,11 @@
+numpy
+scipy
+soundfile
+librosa
+torch
+torchaudio
+onnxruntime
+fastapi
+uvicorn
+python-multipart
+sounddevice

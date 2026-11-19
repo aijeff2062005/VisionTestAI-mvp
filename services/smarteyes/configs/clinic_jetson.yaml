@@ -1,0 +1,120 @@
+# Jetson clinic camera readiness — stand + headphones + eyes.
+# Tuned for CPU YOLO (Jetson torch CUDA wheel mismatch) — keep latency low.
+
+model:
+  weights: yolov8n.pt
+  conf_threshold: 0.40
+  iou_threshold: 0.5
+  person_class_id: 0
+  detect_every_n_frames: 4
+  imgsz: 320
+  # auto | cuda | 0 | cpu — Jetson Orin uses CUDA after Jetson-native torch install
+  device: auto
+  # true = YOLO on track_box crop + count only feet-in-hull people
+  # false + line.mode floor = legacy full-frame detect (rollback)
+  detect_in_zone: true
+
+pose:
+  min_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+  model_complexity: 0
+  bbox_expand_ratio: 0.1
+  # Reuse pose between YOLO ticks (big CPU win)
+  estimate_every_n_frames: 4
+
+line:
+  # fixed = static stand_zone.json / fixed_polygon (clinic default)
+  # floor = HSV auto-floor (legacy rollback); tape = colored tape
+  mode: fixed
+  floor_hsv_low: [0, 0, 130]
+  floor_hsv_high: [179, 60, 255]
+  min_area: 2500
+  min_floor_area_ratio: 0.035
+  search_roi: [0.20, 0.45, 0.90, 1.0]
+  morph_kernel: 7
+  erode_iters: 1
+  dilate_iters: 2
+  fixed_polygon:
+    - [0.28, 0.98]
+    - [0.90, 0.98]
+    - [0.78, 0.48]
+    - [0.36, 0.48]
+  hsv_low: [18, 80, 80]
+  hsv_high: [45, 255, 255]
+  hsv_low2: [40, 60, 60]
+  hsv_high2: [90, 255, 255]
+  band_margin_px: 40
+  min_length_px: 80
+  bottom_roi_ratio: 0.58
+
+headphones:
+  backend: yolo
+  weights: weights/headphones_over_ear.pt
+  conf_threshold: 0.30
+  imgsz: 320
+  detect_every_n_frames: 8
+  require_on_head: true
+  device: auto
+
+eye_cover:
+  enabled: true
+  detect_every_n_frames: 3
+  ear_closed_threshold: 0.14
+  cover_score_threshold: 0.55
+  partial_cover_threshold: 0.40
+  open_iris_min: 0.22
+  asymmetry_min: 0.12
+  min_eye_px: 22
+  bbox_expand_ratio: 0.25
+  # Temporal eye-state tracking: reject one-frame landmark/iris flicker.
+  tracking_window: 5
+  tracking_min_votes: 3
+  tracking_ema_alpha: 0.35
+  tracking_face_grace: 2
+  # Opaque-occluder (paddle/hand) detection — reliable cover signal at 3-5 m
+  # where the iris is only ~3 px. Calibrated: open eye dark<=0.16, pad>=0.68.
+  occluder_enabled: true
+  occluder_cover_threshold: 0.40
+  occluder_partial_threshold: 0.22
+  occluder_region_ratio: 0.26
+  occluder_dark_rel: 0.55
+  occluder_ref_low: 40.0
+
+rules:
+  hold_seconds: 2.0
+  require_single_person: true
+  require_both_ankles: false
+
+video:
+  width: 1280
+  height: 720
+  fps: 30
+  mirror: true
+
+pipeline:
+  source: C270
+  output_dir: outputs
+  log_interval_frames: 30
+  max_smoke_frames: 60
+
+checks:
+  stand: true
+  headphones: false
+  eyes: true
+
+spell:
+  enabled: false
+  # Resolved automatically to services/sloan_stt; override only if needed
+  sloan_root: ../sloan_stt
+  # MacBook Air microphone streamed over LAN; run scripts/network_mic_server.py on Mac
+  mic_url: http://192.168.1.78:8092/audio.raw
+  mic_sample_rate: 48000
+  # Match by name — PortAudio indices shift when a device is busy
+  mic_match:
+    - C270
+    - USB Audio
+  # MacBook mic has a clean floor; avoid treating room noise as speech
+  energy_threshold: 0.008
+  min_confidence: 0.55
+  min_margin: 0.05
+  silence_duration: 0.25

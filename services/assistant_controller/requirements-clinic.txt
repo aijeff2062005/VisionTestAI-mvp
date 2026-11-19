@@ -1,0 +1,8 @@
+# SmartEyes readiness deps for Jetson AC venv (clinic camera)
+# Install into services/assistant_controller/.venv after requirements.txt
+torch>=2.4
+ultralytics>=8.0
+mediapipe==0.10.14
+opencv-python-headless>=4.8
+numpy>=1.24
+pyyaml>=6.0

@@ -1,0 +1,36 @@
+source,context,translated
++ Đăng ký bệnh nhân,,+ Patient Registration
+Bạn không có quyền xem danh sách bệnh nhân.,,You do not have permission to view the patient list.
+Bắt đầu đo,,Start Measurement
+Bệnh nhân,,Patients
+CCCD,,Citizen ID
+Danh sách bệnh nhân,,Patient List
+Duyệt kết quả,,Review Results
+Duyệt và lưu kết luận,,Review and Save Conclusion
+Dừng đo,,Stop Measurement
+Ghi chú,,Notes
+Giờ hẹn (HH:MM),,Appointment Time (HH:MM)
+Hôm nay chưa có lịch hẹn.,,No appointments today.
+Họ tên,,Full Name
+Không tìm thấy bệnh nhân,,No patients found
+Không tải được danh sách bệnh nhân.,,Unable to load patient list.
+Làm mới,,Refresh
+Lịch hôm nay,,Today’s Schedule
+Lọc theo trạng thái,,Filter by Status
+Ngày hẹn,,Appointment Date
+STT,,No.
+Số điện thoại,,Phone Number
+Thêm bệnh nhân,,Add Patient
+Thời gian,,Time
+Tiếp,,Next
+Trước,,Previous
+Trạm điều dưỡng,,Nurse Station
+Tìm bệnh nhân...,,Search patients...
+"Tìm theo tên, ID, CCCD, số điện thoại hoặc email",,"Search by name, ID, citizen ID, phone number, or email"
+Tất cả trạng thái,,All Statuses
+Vui lòng nhập kết luận trước khi duyệt.,,Please enter a conclusion before reviewing.
+Đang hoạt động,,Active
+Đã ngừng hoạt động,,Inactive
+Đăng ký bệnh nhân,,Patient Registration
+Đặt lịch,,Booking
+Đặt lịch thị lực,,Vision Appointment

@@ -1,0 +1,16 @@
+{
+ "doctype": "Page",
+ "name": "clinic-patients",
+ "page_name": "clinic-patients",
+ "title": "Danh sách bệnh nhân",
+ "module": "QY Vision Hospital",
+ "icon": "users",
+ "standard": "Yes",
+ "system_page": 0,
+ "roles": [
+  {"role": "Nursing User"},
+  {"role": "Physician"},
+  {"role": "Healthcare Administrator"},
+  {"role": "System Manager"}
+ ]
+}

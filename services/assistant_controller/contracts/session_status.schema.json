@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://visiontestai.local/contracts/session_status.schema.json",
+  "title": "SessionStatus",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "session_id", "state", "ts"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "0.1.0"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "station_id": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "preparing",
+        "guiding",
+        "measuring",
+        "results",
+        "completed",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "step_id": {
+      "type": ["string", "null"]
+    },
+    "message_vi": {
+      "type": ["string", "null"]
+    },
+    "queue_number": {
+      "type": ["string", "null"]
+    },
+    "error_code": {
+      "type": ["string", "null"]
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

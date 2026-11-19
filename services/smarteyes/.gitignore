@@ -1,0 +1,10 @@
+# Training data + runs (large / regenerated)
+datasets/headphones/raw/
+datasets/headphones/merged/
+runs/
+*.cache
+
+# Local YOLO downloads
+yolov8n.pt
+yolov8s-world.pt
+weights/clip/

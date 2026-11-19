@@ -1,0 +1,142 @@
+source,target
+Refresh,Làm mới
+Loading…,Đang tải…
+Prescription,Đơn kính
+Save Eye Prescription,Lưu đơn kính
+Open Visual Acuity,Mở kết quả thị lực
+No visual acuity results yet.,Chưa có kết quả thị lực.
+Patient,Bệnh nhân
+Both,Hai mắt
+Status,Trạng thái
+Reviewed,Đã duyệt
+Pending,Chờ duyệt
+Review,Duyệt
+Select a result first,Vui lòng chọn một kết quả trước
+Saved {0},Đã lưu {0}
+Right eye,Mắt phải
+Left eye,Mắt trái
+Both eyes,Hai mắt
+Eye,Mắt
+Expected,Dự kiến
+Actual,Thực tế
+Match,Đúng
+Row outcome,Kết quả dòng
+Voice URL,Đường dẫn âm thanh
+Letter trials,Lần đo ký tự
+Letters tested,Các ký tự đã kiểm tra
+Correct,Đúng
+Measurement distance,Khoảng cách đo
+Number of trials,Số lượt đo
+Completed at,Hoàn tất lúc
+Technical data (JSON),Dữ liệu kỹ thuật (JSON)
+Your Shortcuts,Lối tắt
+Reports &amp; Masters,Báo cáo và danh mục
+Booking failed,Đặt lịch thất bại
+Appointment created,Đã tạo lịch hẹn
+New Patient,Bệnh nhân mới
+Patient List,Danh sách bệnh nhân
+Today's Appointments,Lịch hẹn hôm nay
+Recent Face ID Arrivals,Bệnh nhân Face ID gần đây
+No appointments today.,Hôm nay không có lịch hẹn.
+Open,Mở
+In Progress,Đang thực hiện
+Done,Hoàn tất
+Scheduled,Đã lên lịch
+Confirmed,Đã xác nhận
+Cancelled,Đã hủy
+Time,Thời gian
+Actions,Thao tác
+Past due — not conducted,Quá giờ — chưa thực hiện
+Start,Bắt đầu
+Stop,Dừng
+Remove,Xóa
+Name,Tên
+No Face ID arrivals yet.,Chưa có bệnh nhân Face ID.
+Started {0},Đã bắt đầu {0}
+Start failed,Bắt đầu thất bại
+Stopped {0},Đã dừng {0}
+View result,Xem kết quả
+Unable to load review results.,Không thể tải kết quả duyệt.
+Create patient profile,Tạo hồ sơ bệnh nhân
+Scan CCCD,Quét CCCD
+Patient information,Thông tin bệnh nhân
+Citizen ID number,Số CCCD
+Gender,Giới tính
+Select,Chọn
+Male,Nam
+Female,Nữ
+First name,Họ
+Middle name,Tên đệm
+Last name,Tên
+Date of birth,Ngày sinh
+Phone number,Số điện thoại
+Address,Địa chỉ
+Face,Khuôn mặt
+Face image,Ảnh khuôn mặt
+No image,Chưa có ảnh
+Scan the face on this form (5 poses). The profile image will be attached when the patient is created.,Quét khuôn mặt ngay trên form này (5 tư thế). Ảnh đại diện gắn vào hồ sơ khi tạo bệnh nhân.
+Register face,Đăng ký khuôn mặt
+Additional medical information,Thông tin y tế bổ sung
+Blood group,Nhóm máu
+Select blood group,Chọn nhóm máu
+Allergies,Dị ứng
+Enter allergy information,Nhập thông tin dị ứng
+Surgical history,Tiền sử phẫu thuật
+Enter surgical history,Nhập tiền sử phẫu thuật
+Medication history,Tiền sử sử dụng thuốc
+Enter medication history,Nhập tiền sử sử dụng thuốc
+CCCD scanned and information filled automatically.,Đã quét CCCD và tự động điền thông tin.
+Opening camera to scan CCCD...,Đang mở camera để quét CCCD...
+Place the CCCD QR code in the center of the camera...,Đưa mã QR CCCD vào giữa khung camera...
+Unable to open the CCCD camera. Check the browser camera permission.,Không thể mở camera CCCD. Hãy kiểm tra quyền truy cập camera của trình duyệt.
+"QR was read, but the data is not in the correct CCCD format.","Đã đọc QR nhưng dữ liệu không đúng định dạng CCCD."
+Please enter the first name.,Vui lòng nhập Họ.
+Please select a gender.,Vui lòng chọn Giới tính.
+Please enter the citizen ID number.,Vui lòng nhập Số CCCD.
+Creating patient profile...,Đang tạo hồ sơ bệnh nhân...
+The API returned no data.,API không trả về dữ liệu.
+Unable to create patient.,Không thể tạo bệnh nhân.
+Scan face again,Quét lại khuôn mặt
+"A face image is ready. Create the profile to attach it to the patient, or scan again.","Đã có ảnh khuôn mặt. Tạo hồ sơ để gắn vào bệnh nhân, hoặc quét lại."
+Saving the face image to the patient profile…,Đang lưu ảnh khuôn mặt vào hồ sơ…
+Saving the face to the patient profile...,Đang lưu khuôn mặt vào hồ sơ...
+Face saved to the patient profile. Face ID #,Đã lưu khuôn mặt vào hồ sơ. Face ID #
+Image scanned. Saving to GDU / the profile failed — try scanning again.,Ảnh đã quét. Lưu GDU / hồ sơ thất bại — thử quét lại.
+Unable to save the face:,Không lưu được khuôn mặt:
+Video and image are ready. Click Create patient profile to send to GDU and attach to the profile.,Đã giữ video + ảnh. Bấm «Tạo hồ sơ bệnh nhân» để gửi GDU và gắn vào hồ sơ.
+Face scanned. Create the profile to send the video to GDU.,Đã quét khuôn mặt. Tạo hồ sơ để gửi video lên GDU.
+Face Service could not be loaded. Reload the page.,Chưa tải được Face Service. Hãy tải lại trang.
+Face: saved to the profile.,Khuôn mặt: đã lưu vào hồ sơ.
+No face image yet. Scan the face and wait for the saved confirmation before using Face ID.,Chưa có ảnh khuôn mặt. Bấm «Quét khuôn mặt» và chờ thông báo đã lưu trước khi dùng Face ID.
+Patient profile created successfully!,Tạo hồ sơ bệnh nhân thành công!
+Patient name,Tên bệnh nhân
+Citizen ID,Số CCCD
+Nurse,Điều dưỡng
+Doctor,Bác sĩ
+Clinic Admin,Quản trị phòng khám
+Clinic Administration,Quản trị phòng khám
+Date,Ngày
+Time (HH:MM),Giờ (HH:MM)
+Notes,Ghi chú
+Vision examination,Khám thị lực
+Book appointment,Đặt lịch
+Appointment booked:,Đã đặt lịch:
+Face ID number,mã Face ID
+face image,ảnh khuôn mặt
+. Complete face registration before scanning.,. Cần hoàn tất đăng ký khuôn mặt trước khi quét.
+The Face ID image has not been confirmed by Frappe. Do not scan until Face ID is ready.,Chưa xác nhận được ảnh Face ID từ Frappe. Không quét cho tới khi trạng thái Face ID báo sẵn sàng.
+Image push failed; waiting for Jetson to sync from today's appointments…,Tác vụ đẩy ảnh lỗi; đang chờ Jetson tự đồng bộ từ lịch hôm nay…
+Syncing the image to Face ID…,Đang nạp lại ảnh lên Face ID…
+The Face ID image will sync on the appointment date.,Ảnh Face ID sẽ được đồng bộ vào ngày hẹn.
+Face ID is ready to scan.,Face ID đã sẵn sàng để quét.
+No face image; register a face image before scanning.,Chưa có ảnh khuôn mặt; cần đăng ký ảnh trước khi quét.
+Face ID is not ready. Check the connection or try syncing again.,Face ID chưa sẵn sàng. Kiểm tra kết nối hoặc thử đồng bộ lại.
+Unable to check Face ID status. Check the connection.,Chưa kiểm tra được trạng thái Face ID. Vui lòng kiểm tra kết nối.
+Select a patient,Chọn bệnh nhân
+Conclusion / prescription…,Kết luận / chỉ định…
+Not valid,Không hợp lệ
+Date is not valid,Ngày không hợp lệ
+Date is not valid — cannot book a date in the past,Ngày không hợp lệ — không thể đặt lịch trong quá khứ
+Time is not valid — use HH:MM,Giờ không hợp lệ — dùng định dạng HH:MM
+Time is not valid — cannot book a time earlier than now,Giờ không hợp lệ — không thể đặt giờ sớm hơn hiện tại
+Face ID is not ready: the profile is missing,Face ID chưa sẵn sàng: hồ sơ thiếu

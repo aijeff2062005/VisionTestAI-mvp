@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-09-26T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="network-flow" name="Luồng kết nối tổng thể">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="930" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="LUỒNG KẾT NỐI SMART HOSPITAL — JETSON — FACE ID" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=22;fontStyle=1;fontColor=#222222;" vertex="1" parent="1">
+          <mxGeometry x="380" y="25" width="900" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="vpsFrame" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="420" height="670" as="geometry"/>
+        </mxCell>
+        <mxCell id="vpsTitle" value="VPS CODER" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#333333;strokeWidth=2;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="420" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="vpsAddress" value="Public: aquamarine-leopon-37-1.tailf560d4.ts.net&lt;br&gt;Tailscale: 100.113.176.38" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#333333;" vertex="1" parent="1" link="https://aquamarine-leopon-37-1.tailf560d4.ts.net/">
+          <mxGeometry x="65" y="160" width="370" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="frappe" value="Smart Hospital / Frappe&lt;br&gt;HTTPS public → cổng 8000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=15;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="90" y="245" width="320" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="mqtt" value="MQTT Broker&lt;br&gt;100.113.176.38:1883" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="90" y="360" width="320" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="media" value="Media Server&lt;br&gt;100.113.176.38:9010" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="90" y="465" width="320" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="vectorDb" value="Face VectorDB&lt;br&gt;100.113.176.38:8100" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="90" y="570" width="320" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="jetsonFrame" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="610" y="100" width="500" height="670" as="geometry"/>
+        </mxCell>
+        <mxCell id="jetsonTitle" value="JETSON — MÁY ĐO MẮT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#333333;strokeWidth=2;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="610" y="100" width="500" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="jetsonAddress" value="Public: ubuntu.tailf560d4.ts.net · Tailscale: 100.64.238.95&lt;br&gt;LAN: 192.168.1.125" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#333333;" vertex="1" parent="1" link="https://ubuntu.tailf560d4.ts.net/">
+          <mxGeometry x="640" y="160" width="440" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="controller" value="Assistant Controller&lt;br&gt;Điều phối toàn bộ phiên đo" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;strokeWidth=2;fontSize=16;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="700" y="260" width="320" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="chart" value="Chart Web UI&lt;br&gt;cổng 8088" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="655" y="410" width="185" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="stt" value="Sloan STT&lt;br&gt;Ký tự + Đúng/Sai" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="880" y="410" width="185" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="faceBridge" value="AiFace Bridge&lt;br&gt;WebSocket :7788 · Events :7790" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="700" y="550" width="320" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="faceFrame" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="170" width="330" height="500" as="geometry"/>
+        </mxCell>
+        <mxCell id="faceTitle" value="MÁY FACE ID" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#333333;strokeWidth=2;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="170" width="330" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="faceAddress" value="LAN nội bộ: 192.168.1.18:80" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="1290" y="235" width="270" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="faceApi" value="HTTP API&lt;br&gt;Quản lý người dùng" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="300" width="230" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="gallery" value="Gallery trên thiết bị&lt;br&gt;enroll_id + khuôn mặt" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="410" width="230" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="recognition" value="Nhận diện khuôn mặt&lt;br&gt;Trả enroll_id" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="520" width="230" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="frappeToController" value="HTTPS: lịch hẹn / hồ sơ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;fontSize=12;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="frappe" target="controller">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="controllerToFrappe" value="HTTPS: kết quả đo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;fontSize=12;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="controller" target="frappe">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="540" y="330"/><mxPoint x="540" y="285"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="mqttToController" value="MQTT: start / cancel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;fontSize=12;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="mqtt" target="controller">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="controllerToMqtt" value="MQTT: trạng thái" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;fontSize=12;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="controller" target="mqtt">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="550" y="360"/><mxPoint x="550" y="395"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="controllerToMedia" value="HTTP: ảnh / media" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;fontSize=12;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="controller" target="media">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="controllerToVdb" value="HTTP: dữ liệu khuôn mặt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;fontSize=12;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="controller" target="vectorDb">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="controllerChart" value="Hiển thị" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1;strokeColor=#666666;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="controller" target="chart">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="controllerStt" value="Âm thanh / dự đoán" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;endArrow=block;endFill=1;strokeWidth=1;strokeColor=#666666;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="controller" target="stt">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="bridgeController" value="Sự kiện local" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1;strokeColor=#666666;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="faceBridge" target="controller">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="controllerFaceApi" value="HTTP: upsert / get user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;fontSize=12;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="controller" target="faceApi">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="faceApiGallery" value="Cập nhật" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1;strokeColor=#666666;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="faceApi" target="gallery">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="galleryRecognition" value="So khớp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1;strokeColor=#666666;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="gallery" target="recognition">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="recognitionBridge" value="WebSocket: enroll_id / ảnh" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;fontSize=12;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="recognition" target="faceBridge">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

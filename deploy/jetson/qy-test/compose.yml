@@ -1,0 +1,129 @@
+name: qy-jetson-test
+x-app: &app
+  image: ${CUSTOM_IMAGE:?}
+  platform: linux/arm64
+  pull_policy: never
+  restart: unless-stopped
+  volumes:
+    - sites:/home/frappe/frappe-bench/sites
+    - logs:/home/frappe/frappe-bench/logs
+    - ./mariadb-client.cnf:/etc/mysql/conf.d/99-qy-client.cnf:ro
+  depends_on:
+    provision:
+      condition: service_completed_successfully
+services:
+  db:
+    image: ${MARIADB_IMAGE:?}
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${FRAPPE_DB_ROOT_PASSWORD:?}
+    command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb-buffer-pool-size=256M]
+    volumes: [db:/var/lib/mysql]
+    mem_limit: 768m
+    cpus: 1
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+  redis-cache:
+    image: ${REDIS_IMAGE:?}
+    platform: linux/arm64
+    restart: unless-stopped
+    command: [redis-server, --maxmemory, 96mb, --maxmemory-policy, allkeys-lru]
+    mem_limit: 128m
+  redis-queue:
+    image: ${REDIS_IMAGE:?}
+    platform: linux/arm64
+    restart: unless-stopped
+    command: [redis-server, --appendonly, 'yes', --maxmemory, 160mb, --maxmemory-policy, noeviction]
+    volumes: [queue:/data]
+    mem_limit: 256m
+  mqtt:
+    user: "1883:1883"
+    image: ${MOSQUITTO_IMAGE:?}
+    platform: linux/arm64
+    restart: unless-stopped
+    ports: ['${MQTT_BIND:-127.0.0.1}:${MQTT_PORT:-11883}:1883']
+    volumes:
+      - ./mosquitto:/mosquitto/config:ro
+      - mqtt:/mosquitto/data
+    mem_limit: 64m
+    cpus: 0.25
+  configurator:
+    <<: *app
+    restart: 'no'
+    depends_on:
+      db: {condition: service_healthy}
+      redis-cache: {condition: service_started}
+      redis-queue: {condition: service_started}
+    entrypoint: [/home/frappe/frappe-bench/env/bin/python, -c]
+    command:
+      - |
+        import json
+        from pathlib import Path
+        sites = Path("sites")
+        path = sites / "common_site_config.json"
+        config = json.loads(path.read_text()) if path.exists() else {}
+        config.update({
+            "db_host": "db", "db_port": 3306,
+            "redis_cache": "redis://redis-cache:6379",
+            "redis_queue": "redis://redis-queue:6379",
+            "redis_socketio": "redis://redis-queue:6379",
+            "socketio_port": 9000,
+        })
+        temporary = path.with_suffix(".json.tmp")
+        temporary.write_text(json.dumps(config, indent=2) + "\n")
+        temporary.chmod(0o600)
+        temporary.replace(path)
+        listing = sites / "apps.txt.tmp"
+        listing.write_text("".join(p.name + "\n" for p in sorted(Path("apps").iterdir()) if p.is_dir() and not p.name.startswith(".")))
+        listing.replace(sites / "apps.txt")
+  provision:
+    <<: *app
+    restart: 'no'
+    entrypoint: [/usr/local/bin/qy-provision]
+    environment:
+      QY_SITE: ${QY_SITE:?}
+      QY_BASE_URL: ${QY_BASE_URL:?}
+      FRAPPE_ADMIN_PASSWORD: ${FRAPPE_ADMIN_PASSWORD:?}
+      FRAPPE_DB_ROOT_PASSWORD: ${FRAPPE_DB_ROOT_PASSWORD:?}
+      MQTT_USERNAME: ${MQTT_USERNAME:?}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:?}
+      STATION_ID: ${STATION_ID:?}
+    depends_on:
+      configurator: {condition: service_completed_successfully}
+      mqtt: {condition: service_started}
+  backend:
+    <<: *app
+    environment: {GUNICORN_WORKERS: '1', GUNICORN_THREADS: '2'}
+  websocket:
+    <<: *app
+    command: [node, /home/frappe/frappe-bench/apps/frappe/socketio.js]
+  worker:
+    <<: *app
+    command: [bench, worker, --queue, "short,default,long"]
+  scheduler:
+    <<: *app
+    command: [bench, schedule]
+  frontend:
+    <<: *app
+    command: [nginx-entrypoint.sh]
+    environment:
+      BACKEND: backend:8000
+      SOCKETIO: websocket:9000
+      FRAPPE_SITE_NAME_HEADER: $$host
+      UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
+      UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
+      UPSTREAM_REAL_IP_RECURSIVE: 'off'
+    ports: ['${FRONTEND_BIND:-0.0.0.0}:${FRONTEND_PORT:-18080}:8080']
+    depends_on:
+      backend: {condition: service_started}
+      websocket: {condition: service_started}
+volumes:
+  sites:
+  logs:
+  db:
+  queue:
+  mqtt:

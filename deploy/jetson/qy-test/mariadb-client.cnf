@@ -1,0 +1,4 @@
+# This Compose stack uses MariaDB 10.6 over an unpublished, private Docker network.
+# New MariaDB CLI clients otherwise require TLS even for bootstrap SQL imports.
+[client]
+skip-ssl

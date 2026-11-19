@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: VisionTestAI AC ↔ QLBN provisional API
+  version: 0.1.0
+  description: |
+    Provisional contracts for Assistant Controller result callbacks.
+    MQTT session start/status/cancel are documented in docs/contracts.md.
+servers:
+  - url: https://qlbn.example
+paths:
+  /api/v1/vision/results:
+    post:
+      summary: Receive distance acuity results from AC
+      operationId: postVisionResults
+      parameters:
+        - name: X-Correlation-Id
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './results_callback.schema.json'
+            example:
+              schema_version: "0.1.0"
+              session_id: "550e8400-e29b-41d4-a716-446655440000"
+              patient_id: "P001"
+              station_id: "station-01"
+              exam_type: distance_acuity_5m
+              completed_at: "2026-07-23T03:00:00Z"
+              acuity:
+                right:
+                  logmar: 0.1
+                  decimal: 0.8
+                  snellen_approx: "6/7.5"
+                  vn_over_10: "8/10"
+                  correct: 4
+                  total: 5
+                left:
+                  logmar: 0.2
+                  decimal: 0.63
+                  snellen_approx: "6/9.5"
+                  vn_over_10: "6/10"
+                  correct: 4
+                  total: 5
+              protocol:
+                passes_per_eye: 3
+                distance_m: 5.0
+                letter_uncertain_threshold: 0.45
+                letter_accept_threshold: 0.75
+                max_misses: 1
+                letter_timeout_seconds: 3
+                letter_chunk_seconds: 3
+                letter_protocol: model_a_threshold_band
+              raw_trials: []
+      responses:
+        "200":
+          description: Accepted
+        "400":
+          description: Invalid payload

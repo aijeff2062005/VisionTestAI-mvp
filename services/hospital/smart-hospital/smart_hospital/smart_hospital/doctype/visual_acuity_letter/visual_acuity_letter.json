@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "creation": "2026-08-06 09:35:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "eye",
+  "logmar",
+  "vn_over_10",
+  "letter_index",
+  "expected",
+  "actual",
+  "matched",
+  "row_outcome",
+  "voice_url"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "eye",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Eye",
+   "options": "left\nright\nboth",
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "logmar",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "logMAR",
+   "precision": "1"
+  },
+  {
+   "columns": 1,
+   "fieldname": "vn_over_10",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "VN /10"
+  },
+  {
+   "columns": 1,
+   "fieldname": "letter_index",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "#"
+  },
+  {
+   "columns": 1,
+   "fieldname": "expected",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Expected"
+  },
+  {
+   "columns": 1,
+   "fieldname": "actual",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Actual"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "matched",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Match"
+  },
+  {
+   "fieldname": "row_outcome",
+   "fieldtype": "Data",
+   "label": "Row outcome"
+  },
+  {
+   "description": "Optional media URL for the spoken utterance (wired later).",
+   "fieldname": "voice_url",
+   "fieldtype": "Data",
+   "label": "Voice URL"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-06 09:35:00.000000",
+ "modified_by": "Administrator",
+ "module": "Smart Hospital",
+ "name": "Visual Acuity Letter",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "ASC",
+ "states": []
+}

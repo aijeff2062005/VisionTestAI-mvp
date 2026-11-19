@@ -1,0 +1,5 @@
+path: /Users/kagamirudo/ImesPro/VisionTestAI/SmartEyes/datasets/headphones/raw/synthetic
+train: train/images
+val: train/images
+names:
+  0: over_ear

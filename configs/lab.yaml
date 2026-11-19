@@ -1,0 +1,10 @@
+# Shared lab endpoints (reference)
+
+VPS_HOST: 103.249.117.203
+SSH: main.aquamarine-leopon-37.vupham.coder
+MQTT: 1883 user vision
+Hospital: http://103.249.117.203:8000
+Media: http://103.249.117.203:9010
+FaceVDB: http://103.249.117.203:8100
+Jetson chart: http://<jetson>:8088
+AiFace BS: Jetson :7788 / :7790

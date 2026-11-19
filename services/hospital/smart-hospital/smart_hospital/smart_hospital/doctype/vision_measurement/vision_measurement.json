@@ -1,0 +1,196 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-07-22 17:25:39.962142",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_zztp",
+  "naming_series",
+  "patient",
+  "measure_by",
+  "section_break_fs93",
+  "visual_acuity",
+  "section_break_lojd",
+  "right_sph",
+  "right_cyl",
+  "right_axis",
+  "right_add",
+  "right_pd",
+  "right_iop",
+  "column_break_4h3u",
+  "left_sph",
+  "left_cyl",
+  "left_axis",
+  "left_add",
+  "left_pd",
+  "left_iop"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_zztp",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "patient",
+   "fieldtype": "Link",
+   "label": "B\u1ec7nh Nh\u00e2n",
+   "options": "Patient"
+  },
+  {
+   "fieldname": "measure_by",
+   "fieldtype": "Link",
+   "label": "Đo bởi",
+   "options": "Healthcare Practitioner"
+  },
+  {
+   "fieldname": "section_break_fs93",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "right_sph",
+   "fieldtype": "Data",
+   "label": "\u0110\u1ed9 c\u1ea7u m\u1eaft ph\u1ea3i"
+  },
+  {
+   "fieldname": "right_cyl",
+   "fieldtype": "Data",
+   "label": "\u0110\u1ed9 lo\u1ea1n m\u1eaft ph\u1ea3i"
+  },
+  {
+   "fieldname": "right_axis",
+   "fieldtype": "Data",
+   "label": "Tr\u1ee5c \u0111\u1ed9 lo\u1ea1n m\u1eaft ph\u1ea3i"
+  },
+  {
+   "fieldname": "right_add",
+   "fieldtype": "Data",
+   "label": "\u0110\u1ed9 t\u0103ng th\u00eam m\u1eaft ph\u1ea3i"
+  },
+  {
+   "fieldname": "right_pd",
+   "fieldtype": "Data",
+   "label": "Kho\u1ea3ng c\u00e1ch \u0111\u1ed3ng t\u1eed m\u1eaft ph\u1ea3i"
+  },
+  {
+   "fieldname": "right_iop",
+   "fieldtype": "Data",
+   "label": "Nh\u00e3n \u00e1p m\u1eaft ph\u1ea3i"
+  },
+  {
+   "fieldname": "left_sph",
+   "fieldtype": "Data",
+   "label": "\u0110\u1ed9 c\u1ea7u m\u1eaft tr\u00e1i"
+  },
+  {
+   "fieldname": "left_cyl",
+   "fieldtype": "Data",
+   "label": "\u0110\u1ed9 lo\u1ea1n m\u1eaft tr\u00e1i"
+  },
+  {
+   "fieldname": "left_axis",
+   "fieldtype": "Data",
+   "label": "Tr\u1ee5c \u0111\u1ed9 lo\u1ea1n m\u1eaft tr\u00e1i"
+  },
+  {
+   "fieldname": "left_add",
+   "fieldtype": "Data",
+   "label": "\u0110\u1ed9 t\u0103ng th\u00eam m\u1eaft tr\u00e1i"
+  },
+  {
+   "fieldname": "left_pd",
+   "fieldtype": "Data",
+   "label": "Kho\u1ea3ng c\u00e1ch \u0111\u1ed3ng t\u1eed m\u1eaft tr\u00e1i"
+  },
+  {
+   "fieldname": "left_iop",
+   "fieldtype": "Data",
+   "label": "Nh\u00e3n \u00e1p m\u1eaft tr\u00e1i"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Measurement ID",
+   "options": "MEA.-.DD.-.MM.-.YYYY.-"
+  },
+  {
+   "fieldname": "column_break_4h3u",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "visual_acuity",
+   "fieldtype": "Link",
+   "label": "Th\u1ecb L\u1ef1c",
+   "options": "Visual Acuity"
+  },
+  {
+   "fieldname": "section_break_lojd",
+   "fieldtype": "Section Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-07-24 17:05:19.899605",
+ "modified_by": "Administrator",
+ "module": "Smart Hospital",
+ "name": "Vision Measurement",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Physician",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Healthcare Administrator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 0,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Nursing User",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
