@@ -2,7 +2,8 @@
 import os, json, time, io
 from pathlib import Path
 import frappe
-frappe.init(site=os.environ['QY_SITE'], sites_path='sites')
+os.chdir('/home/frappe/frappe-bench/sites')
+frappe.init(site=os.environ['QY_SITE'])
 frappe.connect()
 try:
     apps = frappe.get_installed_apps()
