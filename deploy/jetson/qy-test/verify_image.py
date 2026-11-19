@@ -36,4 +36,14 @@ for module in ['MySQLdb', 'paho.mqtt.publish', 'pyarrow', 'duckdb', 'orjson', 'P
     importlib.import_module(module)
 versions['paho-mqtt'] = importlib.metadata.version('paho-mqtt')
 assert versions['paho-mqtt'] == '2.1.0'
-print(json.dumps({'architecture': platform.machine(), 'versions': versions, 'code_assets_native_imports': 'PASS'}, indent=2))
+# Exercise the pinned patched-Qt ARM64 PDF engine without external network.
+import subprocess, tempfile
+with tempfile.TemporaryDirectory() as temporary:
+    source = Path(temporary) / 'report.html'
+    target = Path(temporary) / 'report.pdf'
+    source.write_text('<html><body><h1>QY ARM64 PDF acceptance</h1><p>VisionCare 123</p></body></html>')
+    version = subprocess.check_output(['wkhtmltopdf', '--version'], text=True).strip()
+    assert 'patched qt' in version.lower(), version
+    subprocess.run(['wkhtmltopdf', '--disable-javascript', '--enable-local-file-access', str(source), str(target)], check=True, timeout=60)
+    assert target.read_bytes().startswith(b'%PDF-') and target.stat().st_size > 1000
+print(json.dumps({'architecture': platform.machine(), 'versions': versions, 'code_assets_native_imports': 'PASS', 'pdf_engine': version, 'pdf_generation': 'PASS'}, indent=2))

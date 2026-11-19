@@ -1,22 +1,45 @@
 name: Build QY native ARM64
 on:
   workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: qy-native-release
+  cancel-in-progress: false
 jobs:
   build:
-    # Provision a trusted ARM64 runner with Docker/Buildx, git and Python first.
-    runs-on: [self-hosted, Linux, ARM64, qy-builder]
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 180
+    env:
+      CUSTOM_IMAGE: visiontestai/frappe:qy-arm64-native1
+      BUILDX_BUILDER: default
     steps:
       - uses: actions/checkout@v4
+      - name: Verify native ARM64 and reclaim unused hosted toolchains
+        run: |
+          test "$(uname -m)" = aarch64
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+          docker info
+          df -h /
       - name: Build immutable app and infrastructure bundle
-        run: bash deploy/jetson/qy-test/build.sh
+        run: bash deploy/jetson/qy-test/build.sh 2>&1 | tee build-native.log
+      - name: Prepare Ubuntu 22.04 ARM64 offline Docker packages
+        run: bash deploy/jetson/qy-test/prepare_offline.sh
       - name: Package installer and configuration
         run: bash deploy/jetson/qy-test/package.sh
+      - name: Test fresh installation, jobs, PDF, restart and persistence
+        run: bash deploy/jetson/qy-test/ci_acceptance.sh
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: qy-arm64-release
+          name: qy-arm64-release-${{ github.run_number }}
+          compression-level: 0
           path: |
             deploy/jetson/qy-test/out/qy-arm64-images.tar.gz
             deploy/jetson/qy-test/out/qy-jetson-config.tar.gz
             deploy/jetson/qy-test/out/SHA256SUMS
+            deploy/jetson/qy-test/out/*verification.json
+            deploy/jetson/qy-test/out/*metadata.json
+            deploy/jetson/qy-test/out/acceptance*.json
+            build-native.log
           retention-days: 7

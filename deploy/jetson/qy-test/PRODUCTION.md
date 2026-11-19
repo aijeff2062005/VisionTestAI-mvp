@@ -1,66 +1,82 @@
-# Native ARM64 release preparation
+# Native ARM64 deployment runbook
 
-Status: installer and workflow scaffolding; NOT a production-certified release.
-Existing out/ artifacts were built under QEMU and are unchanged.
-Target recorded: Jetson Orin Nano Super, Ubuntu 22.04.5, L4T 36.5.2,
-7.4 GiB RAM, Docker Root Dir /var/lib/docker on NVMe.
+Target: Orin Nano Super / L4T R36.5.2 / Ubuntu 22.04.5 ARM64, NVMe.
+AC and SmartEyes stay native. No production DNS, database or broker changes.
+The CI runner is ubuntu-24.04-arm (real ARM64); it is not the runtime base.
+The runtime is pinned Python 3.14.10 / Debian trixie and Node 24.22.3, using the
+recorded upstream Frappe Docker commit and app release/commit lock. Container
+userland supplies its own glibc; no CUDA/L4T user-space libraries are used here.
+Pin L4T in the device inventory, not by substituting a CUDA base into Frappe.
 
-## Build
+## Release/build
 
-Run build.sh then package.sh on a dedicated Linux ARM64 host with local Docker,
-Buildx, git and Python 3. build.sh refuses x86/QEMU release builds. The default
-local Docker builder must support the pinned upstream recipe. No app build is
-performed by install.sh on the target.
+GitHub Actions -> Build QY native ARM64 -> Run workflow. No QEMU registration.
+Download only a successful run's qy-arm64-release artifact. It includes 4 image
+archives (one Docker save tar containing app, MariaDB, Redis and Mosquitto), the
+configuration/installer archive, checksum file and validation reports.
+Image version qy-arm64-native1 is separate from old QEMU test1. Use a distinct
+CUSTOM_IMAGE release tag for subsequent releases; image IDs are recorded.
+The multi-stage official recipe excludes compiler toolchains from runtime.
+Node build dependencies remain where required by upstream; do not blindly prune
+runtime dependencies. All frontend builds happen during image creation.
+PDF uses pinned wkhtmltox 0.12.6.1-3 bookworm ARM64 with patched Qt from the
+wkhtmltopdf packaging release, exercised both standalone and via Frappe in CI.
 
-The workflow .github/workflows/qy-arm64.yml requires an explicitly registered
-self-hosted runner carrying labels Linux, ARM64, qy-builder. It is not provisioned
-by this repository. Register it only for trusted code. The workflow must be pushed
-to the root of the mvp_platform Git repository to become available in GitHub.
+## One-command install after bundle extraction
 
-## Install on a prepared Jetson
-
-Docker Engine, Compose plugin, Python 3 and curl must already be installed.
-Place all three release files in one transfer directory; verify SHA256SUMS there.
-Extract qy-jetson-config.tar.gz into a dedicated directory, then run:
+Extract the Actions artifact into a transfer folder, verify SHA256SUMS, and
+extract qy-jetson-config.tar.gz into a dedicated deployment folder. Then run:
 
 ```bash
-sudo BUNDLE_DIR=/absolute/path/to/transfer ./install.sh
+sudo BUNDLE_DIR=/absolute/transfer ./install.sh
 ```
 
-On first installation environment variables override .env.example. Subsequent
-runs preserve .env. Set QY_SITE, QY_BASE_URL and STATION_ID deliberately for the
-installation. Default values remain isolated QY test values. Configure client DNS
-or hosts entries so qy-test.lan resolves to the Jetson. Installer reports the URL
-only after ping succeeds; ping alone does not validate the clinical workflow.
-Credentials are in .env, not printed to logs. Do not publish that file.
+The same installer works with the network disconnected: all app/infra images
+and Ubuntu Jammy ARM64 Docker .debs with their complete resolved dependency
+closure are included. PACKAGES.lock records exact downloaded versions.
+On a blank device, bootstrap-docker.sh installs these packages with
+apt --no-download, enables Docker and refuses to replace an existing conflicting
+Docker/containerd installation. Existing working Docker/Compose are retained.
+Never uninstall NVIDIA container runtime as part of this install.
 
-Compose restart policies restart long-running containers after Docker starts.
-Enable Docker at boot using the device's service manager and verify a real reboot.
-Re-running the installer may rerun the existing provisioner's migration; reboot
-alone does not invoke the installer. Do not run multiple installers concurrently.
+First run generates 3 separate random passwords in root-readable .env; later
+runs preserve them. Installer discovers LAN source IP without making an internet
+request; QY_BASE_URL can be overridden explicitly before first install. Frontend
+routes requests by the configured site so opening the displayed IP URL works
+without a manual hosts entry. Default project/station remain isolated test names.
+For production promotion, agree site identity/station and load expected business
+data through a separately authorized migration; do not copy live production DB.
 
-## Backup, upgrade and recovery requirements
+Site creation and migration run in the one-time provision container. Reboot only
+restarts persistent containers, not install.sh; running installer again may rerun
+migration, but retains the database. Preserve all named Docker volumes on NVMe.
+Docker logs rotate at 10 MB x 3 per service. Application logs use Frappe logging.
+Check `docker compose ps -a`, `docker compose logs --tail=100 provision` and
+`sudo docker stats`; credentials should never be pasted into tickets.
 
-Before upgrade: record the current image ID, preserve .env securely, and create
-an off-device backup using bench --site SITE backup --with-files. Include the
-site_config.json encryption key. Verify database/public/private backup files.
-Stop writes and workers during the final consistent backup and upgrade window.
-Load the next release, change CUSTOM_IMAGE, migrate with the release provisioner,
-then verify login, assets, worker, websocket and QY measurement callback.
-Database migrations may be irreversible: rollback requires restoring the matching
-pre-upgrade database and files together with the old image. Never use down -v.
-A timed restore drill and automated backup/restore tooling remain release gates.
+## Backup, upgrade, rollback
 
-## Remaining acceptance gates
+```bash
+sudo ./backup.sh /absolute/new-backup-directory
+# Load the next release images first; select a new immutable application tag.
+sudo ./upgrade.sh visiontestai/frappe:NEW_TAG /absolute/pre-upgrade-backup
+# Explicitly replaces database/files; use only in an authorized recovery window.
+sudo ./rollback.sh /absolute/pre-upgrade-backup --restore-data
+```
 
-- Native ARM64 build and dependency/PDF testing, plus browser VisionCare check.
-- All service healthchecks and resource limits validated under real AC workload.
-- Worker job, scheduler, websocket, reboot and attachment persistence tests.
-- Fully offline fresh-JetPack bootstrap: include pinned OS-matched Docker and
-  dependency packages. Current installer refuses missing prerequisites rather
-  than silently downloading them. This is not yet a one-command bare-device kit.
-- Decide measured image/install-time/concurrency thresholds with device owner.
-- Keep >=1 GiB MemAvailable under workload, no sustained swap growth or OOM.
-- Test backup/restore and image+database rollback before production promotion.
+Backup stops application writers, saves an SQL dump, public/private attachments,
+site_config.json (including encryption key), deployment .env and old image.
+Keep backups off-device with restricted access. An error leaves writers stopped
+so the operator can assess consistency. No volume is deleted by these scripts.
+Rollback restores data with its previous app image, rather than assuming database
+migrations can be undone by switching images. Infrastructure versions are fixed;
+these scripts do not implement MariaDB major-version downgrades.
 
-Do not change production AC, MQTT or DNS as part of this isolated deployment.
+## Release gates
+
+See ACCEPTANCE.md. A successful native CI run does not prove Jetson camera/audio,
+physical reboot, offline fresh JetPack, clinical PDF layout or load performance.
+A failed-run artifact must not be deployed. Agree size/time/concurrency limits
+before final acceptance. Keep >=1 GiB MemAvailable with no sustained swap growth.
+With only 1.7 GiB currently available, schedule a maintenance window before
+starting this stack beside AC. Never auto-stop or modify production services.

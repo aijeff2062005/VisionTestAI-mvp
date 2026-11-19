@@ -3,6 +3,7 @@ FROM ${BASE_IMAGE}
 COPY --chown=frappe:0 services/hospital/smart-hospital /home/frappe/frappe-bench/apps/smart_hospital
 COPY --chown=frappe:0 services/hospital/qy-vision-hospital /home/frappe/frappe-bench/apps/qy_vision_hospital
 COPY --chmod=755 deploy/jetson/qy-test/provision.sh /usr/local/bin/qy-provision
+COPY deploy/jetson/qy-test/healthcheck.py /usr/local/bin/qy-healthcheck
 USER frappe
 WORKDIR /home/frappe/frappe-bench
 RUN ./env/bin/pip install -e apps/smart_hospital -e apps/qy_vision_hospital 'paho-mqtt==2.1.0' \

@@ -16,7 +16,7 @@ docker info >/dev/null
 BUILDX_BUILDER="${BUILDX_BUILDER:-default}"
 [[ "$BUILDX_BUILDER" == default ]] || { echo 'Use local default builder for native release builds.' >&2; exit 1; }
 : "${FRAPPE_REF:?Set immutable Frappe v16 release tag}" "${ERPNEXT_REF:?Set immutable ERPNext v16 release tag}" "${HEALTHCARE_REF:?Set immutable Healthcare v16 release tag}" "${DESK_REF:?Set Solvronix Desk release tag}"
-IMAGE="${CUSTOM_IMAGE:-visiontestai/frappe:qy-arm64-test1}"
+IMAGE="${CUSTOM_IMAGE:-visiontestai/frappe:qy-arm64-native1}"
 [[ "$IMAGE" == *:* && "$IMAGE" != *:latest ]] || exit 2
 mkdir -p "$DIR/out"
 CTX="$(mktemp -d)"
@@ -49,7 +49,7 @@ for app in smart-hospital qy-vision-hospital; do
   mkdir -p "$CTX/upstream/services/hospital/$app"
   tar -C "$ROOT/services/hospital/$app" --exclude=.git --exclude=__pycache__ --exclude=.venv --exclude=node_modules --exclude=.env -cf - . | tar -C "$CTX/upstream/services/hospital/$app" -xf -
 done
-cp "$DIR/provision.sh" "$CTX/upstream/deploy/jetson/qy-test/"
+cp "$DIR/provision.sh" "$DIR/healthcheck.py" "$CTX/upstream/deploy/jetson/qy-test/"
 mkdir -p "$CTX/upstream/qy-build-tools"
 cp "$DIR/patch_portal.py" "$CTX/upstream/qy-build-tools/patch_portal.py"
 # A single build graph lets BuildKit share the ARM64 base without a registry.
@@ -65,6 +65,7 @@ APPS_HASH="$(sha256sum "$CTX/upstream/apps.lock.json")"
 APPS_HASH="${APPS_HASH%% *}"
 docker buildx build --builder "${BUILDX_BUILDER:-default}" --progress plain --platform linux/arm64 --load \
   --build-arg "FRAPPE_BRANCH=$FRAPPE_REF" \
+  --build-arg "PYTHON_VERSION=3.14.10" --build-arg "NODE_VERSION=24.22.3" --build-arg "DEBIAN_BASE=trixie" \
   --build-arg "CACHE_BUST=$APPS_HASH" \
   --secret "id=apps_json,src=$CTX/upstream/apps.lock.json" \
   --metadata-file "$DIR/out/build-metadata.json" \
@@ -73,6 +74,7 @@ docker buildx build --builder "${BUILDX_BUILDER:-default}" --progress plain --pl
 docker image inspect "$IMAGE" > "$DIR/out/image-inspect.json"
 docker run --rm --platform linux/arm64 --entrypoint bash "$IMAGE" -ec \
   './env/bin/python -c "import erpnext,healthcare,solvronix_desk,smart_hospital,qy_vision_hospital,paho.mqtt.publish"; bench version' > "$DIR/out/versions.txt"
+docker run --rm -i --entrypoint ./env/bin/python "$IMAGE" < "$DIR/verify_image.py" > "$DIR/out/image-verification.json"
 date -u +%FT%TZ > "$DIR/out/build-date.txt"
 git -C "$ROOT" rev-parse HEAD > "$DIR/out/local-repo.commit"
 git -C "$ROOT" diff -- services/hospital/smart-hospital services/hospital/qy-vision-hospital > "$DIR/out/local-apps.patch"

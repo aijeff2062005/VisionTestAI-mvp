@@ -1,16 +1,22 @@
 name: qy-jetson-test
-x-app: &app
+x-app:
   image: ${CUSTOM_IMAGE:?}
   platform: linux/arm64
   pull_policy: never
   restart: unless-stopped
-  volumes:
-    - sites:/home/frappe/frappe-bench/sites
-    - logs:/home/frappe/frappe-bench/logs
-    - ./mariadb-client.cnf:/etc/mysql/conf.d/99-qy-client.cnf:ro
-  depends_on:
+  volumes: &id002
+  - sites:/home/frappe/frappe-bench/sites
+  - logs:/home/frappe/frappe-bench/logs
+  - ./mariadb-client.cnf:/etc/mysql/conf.d/99-qy-client.cnf:ro
+  depends_on: &id003
     provision:
       condition: service_completed_successfully
+  logging: &id001
+    driver: local
+    options:
+      max-size: 10m
+      max-file: '3'
+  mem_limit: 512m
 services:
   db:
     image: ${MARIADB_IMAGE:?}
@@ -18,72 +24,127 @@ services:
     restart: unless-stopped
     environment:
       MARIADB_ROOT_PASSWORD: ${FRAPPE_DB_ROOT_PASSWORD:?}
-    command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb-buffer-pool-size=256M]
-    volumes: [db:/var/lib/mysql]
+    command:
+    - --character-set-server=utf8mb4
+    - --collation-server=utf8mb4_unicode_ci
+    - --innodb-buffer-pool-size=256M
+    volumes:
+    - db:/var/lib/mysql
     mem_limit: 768m
     cpus: 1
     healthcheck:
-      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      test:
+      - CMD
+      - healthcheck.sh
+      - --connect
+      - --innodb_initialized
       interval: 5s
       timeout: 5s
       retries: 60
+    logging: *id001
   redis-cache:
     image: ${REDIS_IMAGE:?}
     platform: linux/arm64
     restart: unless-stopped
-    command: [redis-server, --maxmemory, 96mb, --maxmemory-policy, allkeys-lru]
+    command:
+    - redis-server
+    - --maxmemory
+    - 96mb
+    - --maxmemory-policy
+    - allkeys-lru
     mem_limit: 128m
+    logging: *id001
+    healthcheck:
+      test:
+      - CMD
+      - redis-cli
+      - ping
+      interval: 10s
+      timeout: 5s
+      retries: 12
   redis-queue:
     image: ${REDIS_IMAGE:?}
     platform: linux/arm64
     restart: unless-stopped
-    command: [redis-server, --appendonly, 'yes', --maxmemory, 160mb, --maxmemory-policy, noeviction]
-    volumes: [queue:/data]
+    command:
+    - redis-server
+    - --appendonly
+    - 'yes'
+    - --maxmemory
+    - 160mb
+    - --maxmemory-policy
+    - noeviction
+    volumes:
+    - queue:/data
     mem_limit: 256m
+    logging: *id001
+    healthcheck:
+      test:
+      - CMD
+      - redis-cli
+      - ping
+      interval: 10s
+      timeout: 5s
+      retries: 12
   mqtt:
-    user: "1883:1883"
+    user: 1883:1883
     image: ${MOSQUITTO_IMAGE:?}
     platform: linux/arm64
     restart: unless-stopped
-    ports: ['${MQTT_BIND:-127.0.0.1}:${MQTT_PORT:-11883}:1883']
+    ports:
+    - ${MQTT_BIND:-127.0.0.1}:${MQTT_PORT:-11883}:1883
     volumes:
-      - ./mosquitto:/mosquitto/config:ro
-      - mqtt:/mosquitto/data
+    - ./mosquitto:/mosquitto/config:ro
+    - mqtt:/mosquitto/data
     mem_limit: 64m
     cpus: 0.25
+    logging: *id001
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - mosquitto_sub -h 127.0.0.1 -t __qy_health -C 1 -W 1 2>&1 | grep -q 'not authori'
+      interval: 20s
+      timeout: 5s
+      retries: 6
   configurator:
-    <<: *app
+    image: ${CUSTOM_IMAGE:?}
+    platform: linux/arm64
+    pull_policy: never
     restart: 'no'
+    volumes: *id002
     depends_on:
-      db: {condition: service_healthy}
-      redis-cache: {condition: service_started}
-      redis-queue: {condition: service_started}
-    entrypoint: [/home/frappe/frappe-bench/env/bin/python, -c]
+      db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      redis-queue:
+        condition: service_started
+    entrypoint:
+    - /home/frappe/frappe-bench/env/bin/python
+    - -c
     command:
-      - |
-        import json
-        from pathlib import Path
-        sites = Path("sites")
-        path = sites / "common_site_config.json"
-        config = json.loads(path.read_text()) if path.exists() else {}
-        config.update({
-            "db_host": "db", "db_port": 3306,
-            "redis_cache": "redis://redis-cache:6379",
-            "redis_queue": "redis://redis-queue:6379",
-            "redis_socketio": "redis://redis-queue:6379",
-            "socketio_port": 9000,
-        })
-        temporary = path.with_suffix(".json.tmp")
-        temporary.write_text(json.dumps(config, indent=2) + "\n")
-        temporary.chmod(0o600)
-        temporary.replace(path)
-        listing = sites / "apps.txt.tmp"
-        listing.write_text("".join(p.name + "\n" for p in sorted(Path("apps").iterdir()) if p.is_dir() and not p.name.startswith(".")))
-        listing.replace(sites / "apps.txt")
+    - "import json\nfrom pathlib import Path\nsites = Path(\"sites\")\npath = sites / \"common_site_config.json\"\nconfig\
+      \ = json.loads(path.read_text()) if path.exists() else {}\nconfig.update({\n    \"db_host\": \"db\", \"db_port\": 3306,\n\
+      \    \"redis_cache\": \"redis://redis-cache:6379\",\n    \"redis_queue\": \"redis://redis-queue:6379\",\n    \"redis_socketio\"\
+      : \"redis://redis-queue:6379\",\n    \"socketio_port\": 9000,\n})\ntemporary = path.with_suffix(\".json.tmp\")\ntemporary.write_text(json.dumps(config,\
+      \ indent=2) + \"\\n\")\ntemporary.chmod(0o600)\ntemporary.replace(path)\nlisting = sites / \"apps.txt.tmp\"\nlisting.write_text(\"\
+      \".join(p.name + \"\\n\" for p in sorted(Path(\"apps\").iterdir()) if p.is_dir() and not p.name.startswith(\".\")))\n\
+      listing.replace(sites / \"apps.txt\")\n"
+    logging: *id001
+    mem_limit: 1024m
   provision:
-    <<: *app
+    image: ${CUSTOM_IMAGE:?}
+    platform: linux/arm64
+    pull_policy: never
     restart: 'no'
-    entrypoint: [/usr/local/bin/qy-provision]
+    volumes: *id002
+    depends_on:
+      configurator:
+        condition: service_completed_successfully
+      mqtt:
+        condition: service_started
+    entrypoint:
+    - /usr/local/bin/qy-provision
     environment:
       QY_SITE: ${QY_SITE:?}
       QY_BASE_URL: ${QY_BASE_URL:?}
@@ -92,38 +153,139 @@ services:
       MQTT_USERNAME: ${MQTT_USERNAME:?}
       MQTT_PASSWORD: ${MQTT_PASSWORD:?}
       STATION_ID: ${STATION_ID:?}
-    depends_on:
-      configurator: {condition: service_completed_successfully}
-      mqtt: {condition: service_started}
+    logging: *id001
+    mem_limit: 1024m
   backend:
-    <<: *app
-    environment: {GUNICORN_WORKERS: '1', GUNICORN_THREADS: '2'}
+    image: ${CUSTOM_IMAGE:?}
+    platform: linux/arm64
+    pull_policy: never
+    restart: unless-stopped
+    volumes: *id002
+    depends_on: *id003
+    environment:
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-1}
+      GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
+      QY_SITE: ${QY_SITE:?}
+    logging: *id001
+    healthcheck:
+      test:
+      - CMD
+      - /home/frappe/frappe-bench/env/bin/python
+      - /usr/local/bin/qy-healthcheck
+      - backend
+      interval: 20s
+      timeout: 10s
+      start_period: 60s
+      retries: 6
+    mem_limit: 768m
   websocket:
-    <<: *app
-    command: [node, /home/frappe/frappe-bench/apps/frappe/socketio.js]
+    image: ${CUSTOM_IMAGE:?}
+    platform: linux/arm64
+    pull_policy: never
+    restart: unless-stopped
+    volumes: *id002
+    depends_on: *id003
+    command:
+    - node
+    - /home/frappe/frappe-bench/apps/frappe/socketio.js
+    logging: *id001
+    healthcheck:
+      test:
+      - CMD
+      - /home/frappe/frappe-bench/env/bin/python
+      - /usr/local/bin/qy-healthcheck
+      - websocket
+      interval: 20s
+      timeout: 10s
+      start_period: 60s
+      retries: 6
+    mem_limit: 192m
   worker:
-    <<: *app
-    command: [bench, worker, --queue, "short,default,long"]
+    image: ${CUSTOM_IMAGE:?}
+    platform: linux/arm64
+    pull_policy: never
+    restart: unless-stopped
+    volumes: *id002
+    depends_on: *id003
+    command:
+    - bench
+    - worker
+    - --queue
+    - short,default,long
+    logging: *id001
+    healthcheck:
+      test:
+      - CMD
+      - /home/frappe/frappe-bench/env/bin/python
+      - /usr/local/bin/qy-healthcheck
+      - worker
+      interval: 20s
+      timeout: 10s
+      start_period: 60s
+      retries: 6
+    environment:
+      QY_SITE: ${QY_SITE:?}
+    mem_limit: 512m
   scheduler:
-    <<: *app
-    command: [bench, schedule]
+    image: ${CUSTOM_IMAGE:?}
+    platform: linux/arm64
+    pull_policy: never
+    restart: unless-stopped
+    volumes: *id002
+    depends_on: *id003
+    command:
+    - bench
+    - schedule
+    logging: *id001
+    healthcheck:
+      test:
+      - CMD
+      - /home/frappe/frappe-bench/env/bin/python
+      - /usr/local/bin/qy-healthcheck
+      - scheduler
+      interval: 20s
+      timeout: 10s
+      start_period: 60s
+      retries: 6
+    mem_limit: 256m
   frontend:
-    <<: *app
-    command: [nginx-entrypoint.sh]
+    image: ${CUSTOM_IMAGE:?}
+    platform: linux/arm64
+    pull_policy: never
+    restart: unless-stopped
+    volumes: *id002
+    depends_on:
+      backend:
+        condition: service_started
+      websocket:
+        condition: service_started
+    command:
+    - nginx-entrypoint.sh
     environment:
       BACKEND: backend:8000
       SOCKETIO: websocket:9000
-      FRAPPE_SITE_NAME_HEADER: $$host
+      FRAPPE_SITE_NAME_HEADER: ${QY_SITE:?}
       UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
       UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
       UPSTREAM_REAL_IP_RECURSIVE: 'off'
-    ports: ['${FRONTEND_BIND:-0.0.0.0}:${FRONTEND_PORT:-18080}:8080']
-    depends_on:
-      backend: {condition: service_started}
-      websocket: {condition: service_started}
+      QY_SITE: ${QY_SITE:?}
+    ports:
+    - ${FRONTEND_BIND:-0.0.0.0}:${FRONTEND_PORT:-18080}:8080
+    logging: *id001
+    healthcheck:
+      test:
+      - CMD
+      - /home/frappe/frappe-bench/env/bin/python
+      - /usr/local/bin/qy-healthcheck
+      - frontend
+      interval: 20s
+      timeout: 10s
+      start_period: 60s
+      retries: 6
+    mem_limit: 128m
 volumes:
-  sites:
-  logs:
-  db:
-  queue:
-  mqtt:
+  sites: null
+  logs: null
+  db: null
+  queue: null
+  mqtt: null

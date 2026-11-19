@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+[[ $(uname -m) == aarch64 ]] || exit 1
+# Run only in an ephemeral CI runner, never against an existing operator site.
+[[ ${GITHUB_ACTIONS:-} == true && ! -e .env ]] || { echo 'Requires fresh GitHub runner'; exit 1; }
+export QY_SITE=qy-ci.lan QY_BASE_URL=http://127.0.0.1:18080 STATION_ID=qy-ci-01
+sudo -E READY_TIMEOUT_SECONDS=1800 ./install.sh
+set -a; source .env; set +a
+# Login proves an actual site rather than a static proxy health response.
+python3 - <<'PY'
+import os, urllib.request, urllib.parse, http.cookiejar
+jar=http.cookiejar.CookieJar()
+opener=urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(jar))
+data=urllib.parse.urlencode({'usr':'Administrator','pwd':os.environ['FRAPPE_ADMIN_PASSWORD']}).encode()
+r=opener.open(urllib.request.Request('http://127.0.0.1:18080/api/method/login',data=data),timeout=30)
+assert r.status==200 and any(c.name=='sid' for c in jar)
+r=opener.open('http://127.0.0.1:18080/desk/visioncare',timeout=30)
+assert r.status==200
+print('Administrator login and authenticated Desk route: PASS')
+PY
+docker compose exec -T backend ./env/bin/python < runtime_acceptance.py > out/acceptance-runtime.json
+# Full container stop/start tests volume survival, not a physical device reboot.
+docker compose stop
+docker compose start
+bash ./wait-ready.sh
+docker compose exec -T -e CHECK_PERSISTENCE=1 backend ./env/bin/python < runtime_acceptance.py > out/acceptance-restart.json
+backup="$PWD/out/ci-backup"
+sudo ./backup.sh "$backup"
+sudo ./rollback.sh "$backup" --restore-data
+docker compose exec -T -e CHECK_PERSISTENCE=1 backend ./env/bin/python < runtime_acceptance.py > out/acceptance-restore.json
+cp install-report.json out/acceptance-install.json
+docker compose ps -a

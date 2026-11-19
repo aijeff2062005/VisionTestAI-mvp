@@ -1,4 +1,4 @@
-"""Apply audited build-only cache/network/QEMU settings to the pinned recipe."""
+"""Apply audited build-only cache/network/asset settings to the pinned recipe."""
 from pathlib import Path
 import sys
 
@@ -24,7 +24,7 @@ cleanup = '''  echo "{}" > sites/common_site_config.json && \\
 assert s.count(cleanup) == 1
 s = s.replace(cleanup, '  echo "{}" > sites/common_site_config.json')
 assets = '''COPY --chown=frappe:0 qy-build-tools/patch_portal.py /tmp/qy-patch-portal.py
-# Separate asset compilation so an emulation/bundler failure keeps installed apps cached.
+# Separate asset compilation so an bundler failure keeps installed apps cached.
 # Rolldown 1.2.16 can stall under QEMU; 1.2.18 remains within Vite 8.2.4's ~1.2.4 range.
 RUN --mount=type=cache,id=qy-frappe-arm64-deps,target=/home/frappe/.cache,uid=1000,gid=0,sharing=locked \\
   cd /home/frappe/frappe-bench && \
