@@ -10,6 +10,7 @@ exec 9>/var/lock/qy-jetson-install.lock
 flock -n 9 || exit 1
 docker compose stop frontend websocket worker scheduler backend
 printf '\nCUSTOM_IMAGE=%s\n' "$next" >> .env
+export CUSTOM_IMAGE="$next"
 # Existing provisioner installs missing apps and migrates once for this upgrade.
 docker compose up -d --force-recreate configurator provision
 docker compose up -d backend websocket worker scheduler frontend

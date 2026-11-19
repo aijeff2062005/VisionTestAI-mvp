@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 # Run only in an ephemeral CI runner, never against an existing operator site.
 [[ ${GITHUB_ACTIONS:-} == true && ! -e .env ]] || { echo 'Requires fresh GitHub runner'; exit 1; }
 export QY_SITE=qy-ci.lan QY_BASE_URL=http://127.0.0.1:18080 STATION_ID=qy-ci-01
-sudo -E READY_TIMEOUT_SECONDS=1800 ./install.sh
+sudo -E QY_INSTALL_DIR="$PWD" READY_TIMEOUT_SECONDS=1800 bash out/qy-jetson-install.run
 # CI owns the ephemeral credentials file; production installer keeps it root-only.
 sudo chown "$(id -u):$(id -g)" .env
 set -a; source .env; set +a
