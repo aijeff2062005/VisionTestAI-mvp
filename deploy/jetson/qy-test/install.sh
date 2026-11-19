@@ -25,10 +25,16 @@ for key in values:
         values[key] = os.environ[key]
 if 'QY_BASE_URL' not in os.environ:
     import subprocess, re
-    routes = subprocess.check_output(['ip','-4','route','get','1.1.1.1'], text=True)
-    match = re.search(r'\bsrc\s+(\S+)', routes)
-    if not match: raise SystemExit('Set QY_BASE_URL=http://JETSON_LAN_IP:18080 explicitly')
-    values['QY_BASE_URL'] = f"http://{match.group(1)}:{values['FRONTEND_PORT']}"
+    route = subprocess.run(['ip','-4','route','get','1.1.1.1'], text=True, capture_output=True)
+    match = re.search(r'\bsrc\s+(\S+)', route.stdout)
+    address = match.group(1) if match else None
+    if not address:
+        import json
+        interfaces = json.loads(subprocess.check_output(['ip','-j','-4','address','show','up'], text=True))
+        candidates = [a['local'] for interface in interfaces if not interface['ifname'].startswith(('lo','docker','br-','veth')) for a in interface.get('addr_info',[]) if a.get('scope') == 'global']
+        address = candidates[0] if candidates else None
+    if not address: raise SystemExit('No LAN address detected; set QY_BASE_URL=http://JETSON_LAN_IP:18080 explicitly')
+    values['QY_BASE_URL'] = f"http://{address}:{values['FRONTEND_PORT']}"
 for key in ('MQTT_PASSWORD', 'FRAPPE_ADMIN_PASSWORD', 'FRAPPE_DB_ROOT_PASSWORD'):
     if not values[key]: values[key] = secrets.token_hex(24)
 Path('.env').write_text(''.join(f'{k}={shlex.quote(v)}\n' for k,v in values.items()))

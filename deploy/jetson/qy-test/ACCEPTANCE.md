@@ -10,7 +10,7 @@ below are recorded. An Actions artifact from a failed run is diagnostic only.
 | 3. Size and install time within agreed limits | Image inspect, install-report.json | Owner-defined limits and measured timing |
 | 4. ARM64 PDF | Patched-Qt engine + Frappe PDF text assertion | Actual clinical print format and visual layout |
 | 5. Background job | RQ job enqueued and completed | Scheduler execution and logs during clinical workload |
-| 6. Offline fresh install + migration | All images/debs packaged, no runtime pull | Network disconnected, fresh JetPack, installer |
+| 6. Offline fresh install + migration | All images/debs packaged; Docker package closure installed with network disabled | Network disconnected, fresh JetPack, installer |
 | 7. Database and attachments survive reboot | File document + bytes survive stop/start and restore | Physical reboot with same checks |
 
 Additional QY acceptance: start/cancel session, camera/audio, SmartEyes callback,

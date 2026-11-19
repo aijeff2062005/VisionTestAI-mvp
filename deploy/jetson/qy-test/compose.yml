@@ -42,6 +42,7 @@ services:
       timeout: 5s
       retries: 60
     logging: *id001
+    pull_policy: never
   redis-cache:
     image: ${REDIS_IMAGE:?}
     platform: linux/arm64
@@ -62,6 +63,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    pull_policy: never
   redis-queue:
     image: ${REDIS_IMAGE:?}
     platform: linux/arm64
@@ -86,6 +88,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    pull_policy: never
   mqtt:
     user: 1883:1883
     image: ${MOSQUITTO_IMAGE:?}
@@ -106,6 +109,7 @@ services:
       interval: 20s
       timeout: 5s
       retries: 6
+    pull_policy: never
   configurator:
     image: ${CUSTOM_IMAGE:?}
     platform: linux/arm64
