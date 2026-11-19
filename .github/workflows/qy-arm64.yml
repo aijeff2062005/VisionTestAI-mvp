@@ -1,8 +1,14 @@
 name: Build QY native ARM64
 on:
   workflow_dispatch:
+    inputs:
+      reuse_run_id:
+        description: Optional same-source native image artifact run ID (operations-script fixes only)
+        required: false
+        default: ''
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: qy-native-release
   cancel-in-progress: false
@@ -21,9 +27,30 @@ jobs:
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
           docker info
           df -h /
+      - uses: actions/download-artifact@v4
+        if: inputs.reuse_run_id != ''
+        with:
+          pattern: qy-arm64-release-*
+          merge-multiple: true
+          run-id: ${{ inputs.reuse_run_id }}
+          github-token: ${{ github.token }}
+      - name: Validate same-source native image reuse
+        if: inputs.reuse_run_id != ''
+        run: |
+          cd deploy/jetson/qy-test
+          previous=$(cat out/local-repo.commit)
+          git fetch --depth=1 origin "$previous"
+          git diff --exit-code "$previous" HEAD -- ../../../services/hospital Dockerfile healthcheck.py provision.sh prepare_recipe.py patch_portal.py verify_sources.py versions.env sources.lock.json
+          python3 verify_archive.py out/qy-arm64-images.tar.gz > out/archive-verification.json
+          tar -xzf out/qy-jetson-config.tar.gz -C out docker-debs
+          docker load -i out/qy-arm64-images.tar.gz
+          docker run --rm -i --entrypoint ./env/bin/python "$CUSTOM_IMAGE" < verify_image.py > out/image-verification.json
+          cp out/local-repo.commit out/image-source.commit
       - name: Build immutable app and infrastructure bundle
+        if: inputs.reuse_run_id == ''
         run: bash deploy/jetson/qy-test/build.sh 2>&1 | tee build-native.log
       - name: Prepare Ubuntu 22.04 ARM64 offline Docker packages
+        if: inputs.reuse_run_id == ''
         run: bash deploy/jetson/qy-test/prepare_offline.sh
       - name: Package installer and configuration
         run: bash deploy/jetson/qy-test/package.sh
@@ -58,5 +85,6 @@ jobs:
             deploy/jetson/qy-test/out/all-images-inspect.json
             deploy/jetson/qy-test/out/versions.txt
             deploy/jetson/qy-test/out/local-repo.commit
+            deploy/jetson/qy-test/out/image-source.commit
             build-native.log
           retention-days: 7

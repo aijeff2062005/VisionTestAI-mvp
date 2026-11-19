@@ -21,7 +21,12 @@ docker compose run --rm --no-deps --user 0 -e QY_SITE -e FRAPPE_DB_ROOT_PASSWORD
 cp /backup/site_config.json "sites/$QY_SITE/site_config.json"
 chown 1000:0 "sites/$QY_SITE/site_config.json"
 shopt -s nullglob
-db=(/backup/*database.sql.gz); public=(/backup/*-files.tgz /backup/*-files.tar); private=(/backup/*-private-files.tgz /backup/*-private-files.tar)
+db=(/backup/*-database*.sql.gz)
+private=(/backup/*-private-files*.tgz /backup/*-private-files*.tar)
+public=()
+for candidate in /backup/*-files*.tgz /backup/*-files*.tar; do
+  [[ "$candidate" == *-private-files* ]] || public+=("$candidate")
+done
 [[ ${#db[@]} == 1 && ${#public[@]} == 1 && ${#private[@]} == 1 ]]
 # Set DB credentials through the environment, not host process arguments.
 runuser -u frappe -- bench --site "$QY_SITE" --force restore "${db[0]}" --db-root-password "$FRAPPE_DB_ROOT_PASSWORD" --with-public-files "${public[0]}" --with-private-files "${private[0]}"
