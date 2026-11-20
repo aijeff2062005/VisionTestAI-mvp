@@ -1,0 +1,70 @@
+name: Publish validated Jetson candidate
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Successful native release workflow run ID
+        required: true
+permissions:
+  contents: write
+  actions: read
+jobs:
+  candidate:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RUN_ID: ${{ inputs.run_id }}
+    steps:
+      - name: Validate successful native build provenance
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" > run.json
+          python3 - <<'PY'
+          import json, os
+          run=json.load(open('run.json'))
+          assert run['conclusion']=='success' and run['name']=='Build QY native ARM64'
+          with open(os.environ['GITHUB_ENV'],'a') as output:
+              output.write('SOURCE_COMMIT='+run['head_sha']+'\n')
+          PY
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: qy-arm64-release-*
+          run-id: ${{ inputs.run_id }}
+          merge-multiple: true
+          github-token: ${{ github.token }}
+      - name: Verify and publish draft candidate with evidence
+        run: |
+          cd deploy/jetson/qy-test/out
+          sha256sum -c SHA256SUMS.run
+          python3 - <<'PY'
+          import json, os, zipfile
+          from pathlib import Path
+          browser=json.loads(Path('acceptance-browser.json').read_text())
+          assert browser['visioncare_visible'] and not browser['page_errors']
+          native=json.loads(Path('image-verification.json').read_text())
+          assert native['architecture']=='aarch64' and native['pdf_generation']=='PASS'
+          for name in ('runtime','restart','restore'):
+              assert json.loads(Path(f'acceptance-{name}.json').read_text())['persistence']=='PASS'
+          measured=json.loads(Path('acceptance-measurements.json').read_text())
+          assert all(not trial['errors'] for trial in measured['trials'])
+          with zipfile.ZipFile('qy-native-evidence.zip','w',zipfile.ZIP_DEFLATED) as archive:
+              for path in sorted(Path('.').iterdir()):
+                  if path.suffix in ('.json','.png','.pdf','.lock','.txt','.commit','.log') and path.stat().st_size<10*1024*1024:
+                      archive.write(path,path.name)
+          Path('candidate-notes.txt').write_text(f'''Native ARM64 release candidate. Hardware acceptance on Jetson remains pending.
+          CI: https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['RUN_ID']}
+
+          Verify SHA256SUMS.run, then install on a fresh supported device:
+          sudo bash qy-jetson-install.run
+
+          Verified on native ARM64 CI: full build without QEMU, offline Docker package dependencies, one-command setup, nine healthy services, admin login, PDF, worker job, restart persistence, backup/restore and VisionCare UI.
+          Performance thresholds are UNDECIDED. Measurements are CI observations, not Jetson capacity guarantees.
+          Pending device tests: fresh JetPack offline installation, second LAN browser, physical reboot, clinical PDF, AC/camera/audio workflow and memory/swap under real load.
+          Default company is QY Test Clinic; configure business identity before production promotion.
+          ''')
+          PY
+          tag="qy-jetson-native-rc-$RUN_ID"
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$SOURCE_COMMIT" --draft --prerelease \
+            --title 'QY Jetson ARM64 candidate — hardware acceptance pending' --notes-file candidate-notes.txt \
+            qy-jetson-install.run SHA256SUMS.run qy-native-evidence.zip visioncare-native-arm64.png qy-arm64-report.pdf
+          echo "Draft candidate created from native run $RUN_ID" >> "$GITHUB_STEP_SUMMARY"
