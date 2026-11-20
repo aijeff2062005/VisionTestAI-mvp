@@ -18,6 +18,15 @@ assert not (bench / 'apps/tv_vision_hospital').exists()
 page_css = bench / 'apps/qy_vision_hospital/qy_vision_hospital/qy_vision_hospital/page/visioncare/visioncare.css'
 assert 'fonts.googleapis.com' not in page_css.read_text(), 'Offline UI must not import Google fonts'
 assert not (bench / 'sites/frontend').exists()
+import ast,hashlib
+package=bench/'apps/qy_vision_hospital/qy_vision_hospital'
+hooks=ast.parse((package/'hooks.py').read_text())
+includes=next(ast.literal_eval(node.value) for node in hooks.body if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='app_include_js' for t in node.targets))
+assert all(not item.startswith(('http://','https://')) for item in includes), 'Desk must not depend on global CDN scripts'
+vendor=package/'public/vendor/jsqr-1.4.0'
+lock=json.loads((vendor/'source.lock.json').read_text())
+assert hashlib.sha256((vendor/'jsQR.js').read_bytes()).hexdigest()==lock['js_sha256']
+
 assert (bench / 'assets/qy_vision_hospital/js/clinic_shell.js').is_file()
 assert list((bench / 'assets/frappe/dist/js').glob('desk.bundle.*.js'))
 assert (bench / 'assets/erpnext/banking/index.html').is_file()

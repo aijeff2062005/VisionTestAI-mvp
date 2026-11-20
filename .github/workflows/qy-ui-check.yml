@@ -10,18 +10,26 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Reclaim unused hosted toolchains
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
       - uses: actions/download-artifact@v4
         with:
           pattern: qy-arm64-release-*
-          run-id: 44508617056
+          run-id: 44518988873
           merge-multiple: true
           github-token: ${{ github.token }}
-      - name: Start native image with candidate CSS override for diagnosis
+      - name: Start native base with read-only candidate app for diagnosis
         run: |
           test "$(uname -m)" = aarch64
           cd deploy/jetson/qy-test
-          export QY_CSS="$GITHUB_WORKSPACE/services/hospital/qy-vision-hospital/qy_vision_hospital/qy_vision_hospital/page/visioncare/visioncare.css"
-          printf 'services:\n  backend:\n    volumes:\n      - ${QY_CSS}:/home/frappe/frappe-bench/apps/qy_vision_hospital/qy_vision_hospital/qy_vision_hospital/page/visioncare/visioncare.css:ro\n' > out/ui-override.yml
+          bash out/qy-jetson-install.run --extract-only out
+          rm out/qy-jetson-install.run
+          export QY_PACKAGE="$GITHUB_WORKSPACE/services/hospital/qy-vision-hospital/qy_vision_hospital"
+          python3 - <<'PYOVERRIDE'
+          import os, json
+          services={name:{"volumes":[os.environ['QY_PACKAGE']+':/home/frappe/frappe-bench/apps/qy_vision_hospital/qy_vision_hospital:ro']} for name in ('configurator','provision','backend','frontend','worker','scheduler','websocket')}
+          open('out/ui-override.yml','w').write(json.dumps({'services':services}))
+          PYOVERRIDE
           export COMPOSE_FILE="$PWD/compose.yml:$PWD/out/ui-override.yml"
           export QY_SITE=qy-ci.lan QY_BASE_URL=http://127.0.0.1:18080 STATION_ID=qy-ci-01
           sudo -E bash install.sh
@@ -36,6 +44,12 @@ jobs:
           source .env
           set +a
           /tmp/qy-browser/bin/python browser_acceptance.py
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          cd deploy/jetson/qy-test
+          sudo docker compose ps -a
+          sudo docker compose logs --tail=50 provision backend
       - uses: actions/upload-artifact@v4
         if: always()
         with:

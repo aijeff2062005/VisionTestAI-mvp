@@ -109,3 +109,18 @@ on rerun. `sudo QY_INSTALL_DIR=/absolute/path bash qy-jetson-install.run` overri
 that directory. `bash qy-jetson-install.run --extract-only DIR` unpacks the three
 transfer files for inspection without installing Docker or starting services.
 The total installer timing includes extraction when invoked through this bundle.
+
+## First-site business setup
+
+The installer completes the pinned Frappe/ERPNext setup workflow through its
+official API. It does not just flip a setup-complete flag. Defaults are explicitly
+test identity: QY Test Clinic / QYT, Vietnam, VND, Asia/Ho_Chi_Minh, Vietnamese.
+Set QY_COMPANY_NAME, QY_COMPANY_ABBR, QY_COUNTRY, QY_CURRENCY, QY_TIME_ZONE and
+QY_LANGUAGE before the first install for the intended deployment. Existing
+completed sites retain their identity/settings. An incomplete site containing
+a different company is refused until the operator supplies that company name.
+The wizard uses the standard chart and current calendar fiscal year; these
+bootstrap defaults require business review before production promotion.
+Desk QR decoding uses a local, integrity-verified jsQR 1.4.0 bundle with its MIT
+license. No global Desk script requires a CDN. Optional face-enrollment models
+remain outside the QY-only acceptance profile.

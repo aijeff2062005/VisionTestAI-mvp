@@ -9,6 +9,7 @@ try:
     apps = frappe.get_installed_apps()
     assert set(apps) == {'frappe','erpnext','healthcare','solvronix_desk','smart_hospital','qy_vision_hospital'}, apps
     assert frappe.db.exists('Page','visioncare')
+    assert frappe.is_setup_complete(), 'Setup wizard must be completed by installer'
     from frappe.utils.file_manager import save_file
     marker = 'qy-release-acceptance.txt'
     metadata = Path(frappe.get_site_path('private','qy-acceptance-marker.json'))

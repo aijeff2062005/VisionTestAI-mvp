@@ -12,7 +12,7 @@ app_include_js = [
     "/assets/qy_vision_hospital/js/patient_list.js?v=patient-list-compact-1",
     "/assets/qy_vision_hospital/js/face_landmarker.js",
     "/assets/qy_vision_hospital/js/face_enroll.js",
-    "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js",
+    "/assets/qy_vision_hospital/vendor/jsqr-1.4.0/jsQR.js",
     "/assets/qy_vision_hospital/js/patient_cccd.js",
 ]
 

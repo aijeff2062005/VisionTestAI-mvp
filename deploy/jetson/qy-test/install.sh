@@ -20,7 +20,7 @@ if [[ ! -f .env ]]; then
   python3 - <<'PY'
 import os, secrets, shlex
 from pathlib import Path
-values = dict(line.split('=', 1) for line in Path('.env.example').read_text().splitlines() if line and not line.startswith('#'))
+values = {key: (shlex.split(value)[0] if value else '') for key,value in (line.split('=',1) for line in Path('.env.example').read_text().splitlines() if line and not line.startswith('#'))}
 for key in values:
     if key in os.environ:
         values[key] = os.environ[key]
@@ -74,6 +74,11 @@ if [[ ! -s mosquitto/passwd || ! -s mosquitto/acl ]]; then
 fi
 docker compose --env-file .env up -d
 bash ./wait-ready.sh
+# Run the official setup workflow, never force setup_complete flags by hand.
+docker compose run --rm --no-deps -T \
+  -e QY_SITE -e QY_COMPANY_NAME -e QY_COMPANY_ABBR -e QY_COUNTRY \
+  -e QY_CURRENCY -e QY_TIME_ZONE -e QY_LANGUAGE \
+  --entrypoint /home/frappe/frappe-bench/env/bin/python backend - < setup_site.py
 start=$SECONDS
 timeout="${READY_TIMEOUT_SECONDS:-1800}"
 until [[ $(curl --noproxy '*' --max-time 5 -fsS -H "Host: $QY_SITE" "http://127.0.0.1:$FRONTEND_PORT/api/method/ping" 2>/dev/null || true) == *'"pong"'* ]]; do
