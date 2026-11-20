@@ -101,4 +101,4 @@ jobs:
             deploy/jetson/qy-test/out/local-repo.commit
             deploy/jetson/qy-test/out/image-source.commit
             build-native.log
-          retention-days: 7
+          retention-days: ${{ job.status == 'success' && 7 || 1 }}
